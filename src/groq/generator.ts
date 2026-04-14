@@ -118,13 +118,17 @@ Separate each section with the [SECTION_NAME] tags clearly.
     
     for (const line of lines) {
       const trimmedLine = line.trim();
-      if (!trimmedLine) continue;
+      if (!trimmedLine) {
+        if (currentSection) sections[currentSection] += '\n';
+        continue;
+      }
 
-      const sectionMatch = trimmedLine.match(/^\[?(TITLE|LEAD|BODY|INSIGHT|SUMMARY)\]?/i);
+      // Improved Regex: Supports [TAG], **[TAG]**, TAG: formats and captures same-line content
+      const sectionMatch = trimmedLine.match(/^[*]*\s*\[?(TITLE|LEAD|BODY|INSIGHT|SUMMARY)\]?\s*[:\-]*[*]*\s*(.*)/i);
       
       if (sectionMatch) {
         currentSection = sectionMatch[1].toUpperCase();
-        sections[currentSection] = '';
+        sections[currentSection] = sectionMatch[2] ? sectionMatch[2] + '\n' : '';
       } else if (currentSection) {
         sections[currentSection] += line + '\n';
       }
