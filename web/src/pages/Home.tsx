@@ -2,6 +2,7 @@ import React, { useDeferredValue, useEffect, useState } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { applySeo } from '../seo';
 
 interface Post {
   id: string;
@@ -70,8 +71,6 @@ const Home: React.FC = () => {
   const categories = ['All', 'Agents', 'Automation', 'Infrastructure', 'Policy', 'Research'];
 
   useEffect(() => {
-    document.title = 'AI Automator Lab | Daily AI News and Analysis';
-
     const fetchPosts = async () => {
       try {
         const res = await axios.get(`${API_BASE}/posts`);
@@ -85,6 +84,22 @@ const Home: React.FC = () => {
 
     fetchPosts();
   }, []);
+
+  useEffect(() => {
+    const featured = posts[0];
+    const description = featured
+      ? cleanContent(featured.excerpt || featured.content).slice(0, 155)
+      : 'Daily AI news, automation monitoring, and source-linked analysis.';
+    const image = featured ? getStoryImage(featured, 0) : FALLBACK_IMAGE;
+
+    return applySeo({
+      title: 'AI Automator Lab | Daily AI News and Analysis',
+      description,
+      url: 'https://ai-automator-lab.vercel.app/',
+      image,
+      type: 'website',
+    });
+  }, [posts]);
 
   const filteredPosts = posts.filter((post) => {
     const searchable = `${post.title} ${cleanContent(post.excerpt || post.content)}`.toLowerCase();

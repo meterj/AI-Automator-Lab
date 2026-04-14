@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Link, useParams } from 'react-router-dom';
 import { motion, useScroll, useSpring } from 'framer-motion';
+import { applySeo } from '../seo';
 
 interface Post {
   id: string;
@@ -46,7 +47,6 @@ const PostDetail: React.FC = () => {
       try {
         const res = await axios.get(`${API_BASE}/posts/${id}`);
         setPost(res.data);
-        document.title = `${res.data.title} | AI Automator Lab`;
       } catch (err) {
         console.error('Failed to fetch post:', err);
       } finally {
@@ -77,6 +77,19 @@ const PostDetail: React.FC = () => {
   const heroImage =
     extractFirstImage(post.content) ||
     `https://images.unsplash.com/${DETAIL_IMAGES[fallbackIndex]}?auto=format&fit=crop&q=80&w=1800`;
+
+  useEffect(() => {
+    if (!post) return;
+
+    return applySeo({
+      title: `${post.title} | AI Automator Lab`,
+      description: (post.excerpt || '').trim() || 'AI and automation article from AI Automator Lab.',
+      url: `https://ai-automator-lab.vercel.app/post/${post.id}`,
+      image: heroImage,
+      type: 'article',
+      articlePublishedTime: new Date(post.createdAt).toISOString(),
+    });
+  }, [heroImage, post]);
 
   return (
     <>
