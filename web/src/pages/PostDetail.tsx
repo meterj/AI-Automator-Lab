@@ -15,6 +15,26 @@ interface Post {
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
+// 검증된 고화질 Unsplash 테크 이미지 목록
+const TECH_IMAGES = [
+  'photo-1677442136019-21780ecad995', // AI Abstract
+  'photo-1485827404703-89b55fcc595e', // Robot
+  'photo-1620712943543-bcc4638d9f80', // Digital Brain
+  'photo-1550751827-4bd374c3f58b', // Motherboard
+  'photo-1451187580459-43490279c0fa', // Digital Earth
+  'photo-1518770660439-4636190af475', // CPU
+  'photo-1531297484001-80022131f5a1', // Laptop
+  'photo-1504384308090-c894fdcc538d', // Data Center
+  'photo-1581091226825-a6a2a5aee158', // Technician
+  'photo-1488590528505-98d2b5aba04b'  // Code
+];
+
+const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&q=80&w=1200';
+
+const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+  e.currentTarget.src = FALLBACK_IMAGE;
+};
+
 const PostDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [post, setPost] = useState<Post | null>(null);
@@ -70,8 +90,9 @@ const PostDetail: React.FC = () => {
           {/* Banner Image */}
           <div className="post-detail-banner">
             <img 
-              src={`https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&q=80&w=1632`} 
+              src={`https://images.unsplash.com/${TECH_IMAGES[parseInt(post.id) % TECH_IMAGES.length] || TECH_IMAGES[0]}?auto=format&fit=crop&q=80&w=1632`} 
               alt="Post Banner" 
+              onError={handleImageError}
             />
           </div>
 

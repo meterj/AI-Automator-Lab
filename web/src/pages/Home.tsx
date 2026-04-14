@@ -27,15 +27,25 @@ const cleanContent = (text: string | undefined): string => {
     .trim();
 };
 
-// 검증된 고화질 Unsplash 테크 이미지 ID 목록
+// 검증된 고화질 Unsplash 테크 이미지 목록
 const TECH_IMAGES = [
-  'photo-1677442136019-21780ecad995', // AI Abstract Blue
-  'photo-1485827404703-89b55fcc595e', // Robot hand
+  'photo-1677442136019-21780ecad995', // AI Abstract
+  'photo-1485827404703-89b55fcc595e', // Robot
   'photo-1620712943543-bcc4638d9f80', // Digital Brain
   'photo-1550751827-4bd374c3f58b', // Motherboard
   'photo-1451187580459-43490279c0fa', // Digital Earth
-  'photo-1518770660439-4636190af475'  // CPU
+  'photo-1518770660439-4636190af475', // CPU
+  'photo-1531297484001-80022131f5a1', // Laptop
+  'photo-1504384308090-c894fdcc538d', // Data Center
+  'photo-1581091226825-a6a2a5aee158', // Technician
+  'photo-1488590528505-98d2b5aba04b'  // Code
 ];
+
+const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&q=80&w=1200';
+
+const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+  e.currentTarget.src = FALLBACK_IMAGE;
+};
 
 const Home: React.FC = () => {
   const [posts, setPosts] = useState<Post[]>([]);
@@ -97,6 +107,7 @@ const Home: React.FC = () => {
               <img 
                 src={`https://images.unsplash.com/${TECH_IMAGES[0]}?auto=format&fit=crop&q=80&w=1600`} 
                 alt="AI Feature" 
+                onError={handleImageError}
               />
               <div className="image-overlay"></div>
             </div>
@@ -162,6 +173,7 @@ const Home: React.FC = () => {
                   <img 
                     src={`https://images.unsplash.com/${TECH_IMAGES[(index + 1) % TECH_IMAGES.length]}?auto=format&fit=crop&q=80&w=800`} 
                     alt={post.title} 
+                    onError={handleImageError}
                   />
                   <div className="thumbnail-overlay"></div>
                 </div>
