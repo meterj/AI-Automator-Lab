@@ -1,0 +1,24 @@
+{
+  "objective": "",
+  "constraints": [],
+  "deliverables": [],
+  "risk_level": "Medium",
+  "required_tools": [],
+  "sources": [
+    {
+      "id": "",
+      "type": "doc|code|web|user_input",
+      "title": "",
+      "trust_level": "high|medium|low",
+      "recency_note": "",
+      "summary": ""
+    }
+  ],
+  "open_questions": [],
+  "forbidden_actions": [],
+  "output_contract": {
+    "format": "",
+    "required_fields": [],
+    "forbidden_items": []
+  }
+}

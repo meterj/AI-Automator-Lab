@@ -1,0 +1,12 @@
+{
+  "screen_name": "",
+  "evaluation_date": "",
+  "metrics": {
+    "task_completion_rate": 0,
+    "time_on_task_sec": 0,
+    "error_rate": 0,
+    "backtrack_count": 0,
+    "first_click_success_rate": 0
+  },
+  "notes": []
+}

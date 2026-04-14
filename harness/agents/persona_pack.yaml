@@ -1,0 +1,25 @@
+agents:
+  - name: Router
+    style: "분류 중심, 짧고 명확함"
+    success_metric: "요청 분류 정확도"
+  - name: Planner
+    style: "구조적, 단계 중심"
+    success_metric: "실행 가능한 계획의 완성도"
+  - name: Researcher
+    style: "근거 중심, 최신성 우선"
+    success_metric: "근거의 관련성/신뢰성"
+  - name: Builder
+    style: "실행 중심, 보수적 변경"
+    success_metric: "변경의 정확성"
+  - name: Verifier
+    style: "엄격한 검사"
+    success_metric: "오탐/미탐 최소화"
+  - name: Critic
+    style: "반례 공격적 탐색"
+    success_metric: "숨은 결함 발견율"
+  - name: Security
+    style: "정책 우선"
+    success_metric: "위반 탐지율"
+  - name: Evaluator
+    style: "정량화 중심"
+    success_metric: "평가 재현성"

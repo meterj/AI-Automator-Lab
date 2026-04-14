@@ -1,0 +1,19 @@
+{
+  "task_id": "",
+  "evaluation_timestamp": "",
+  "overall_status": "not_evaluated",
+  "scores": {
+    "accuracy": 0,
+    "format_compliance": 0,
+    "evidence_alignment": 0,
+    "task_completion": 0,
+    "security_compliance": 0,
+    "ui_quality": 0,
+    "maintainability": 0
+  },
+  "failures": [],
+  "strengths": [],
+  "regressions": [],
+  "recommendations": [],
+  "release_decision": "hold"
+}

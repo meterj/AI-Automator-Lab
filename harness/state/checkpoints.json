@@ -1,0 +1,18 @@
+{
+  "task_id": "",
+  "latest_checkpoint_id": "",
+  "checkpoints": [
+    {
+      "checkpoint_id": "cp-001",
+      "timestamp": "",
+      "stage": "planned",
+      "description": "초기 계획 완료",
+      "artifacts": [
+        "harness/state/implementation_plan.md"
+      ],
+      "rollback_instructions": [
+        "필요 시 이 지점으로 상태를 되돌리고 후속 변경을 무시한다."
+      ]
+    }
+  ]
+}

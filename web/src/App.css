@@ -1,0 +1,456 @@
+/* AI Automator Lab - Luxury Magazine Styles */
+
+.header {
+  height: var(--header-height);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(15px);
+  border-bottom: 1px solid var(--glass-border);
+  margin-bottom: 40px;
+}
+
+.header-content {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logo {
+  font-size: 1.6rem;
+  letter-spacing: -1px;
+  font-weight: 900;
+  color: var(--text-primary);
+}
+
+.logo .accent {
+  color: var(--accent-primary);
+  margin-left: 2px;
+}
+
+nav ul {
+  display: flex;
+  gap: 30px;
+}
+
+nav a {
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+nav a:hover {
+  color: var(--accent-primary);
+}
+
+/* Hero Section - Split Layout */
+.hero {
+  margin-bottom: 80px;
+}
+
+.hero-card {
+  padding: 0;
+  overflow: hidden;
+  display: flex;
+  min-height: 550px;
+  background: white;
+  border-radius: 32px;
+}
+
+.hero-image-side {
+  width: 55%;
+  background-color: #f1f2f6;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-image-side img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 1.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.hero-card:hover .hero-image-side img {
+  transform: scale(1.08);
+}
+
+.image-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(to right, rgba(255, 255, 255, 0.1), transparent);
+  pointer-events: none;
+}
+
+.hero-content-side {
+  width: 45%;
+  padding: 60px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.hero-badge {
+  display: inline-block;
+  color: var(--accent-primary);
+  font-weight: 800;
+  font-size: 0.75rem;
+  letter-spacing: 3px;
+  margin-bottom: 15px;
+  text-transform: uppercase;
+}
+
+.hero h1 {
+  font-size: 3.5rem;
+  line-height: 1.1;
+  margin-bottom: 25px;
+  letter-spacing: -2px;
+}
+
+.hero-excerpt {
+  font-size: 1.15rem;
+  color: var(--text-secondary);
+  margin-bottom: 40px;
+  line-height: 1.7;
+}
+
+/* Posts Grid - Luxury Card */
+.section-title {
+  font-size: 2.5rem;
+  font-weight: 900;
+  margin-bottom: 40px;
+  letter-spacing: -1.5px;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.accent-dot {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  background: var(--accent-primary);
+  border-radius: 50%;
+  box-shadow: 0 0 20px var(--accent-primary);
+}
+
+.posts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  gap: 40px;
+}
+
+.post-card {
+  padding: 0;
+  overflow: hidden;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  border-radius: 28px;
+}
+
+.post-thumbnail {
+  width: 100%;
+  height: 240px;
+  background-color: #f1f2f6;
+  overflow: hidden;
+}
+
+.post-thumbnail img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.post-card:hover .post-thumbnail img {
+  transform: scale(1.15);
+}
+
+.post-info {
+  padding: 30px;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.post-meta {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 15px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: var(--text-muted);
+}
+
+.post-tag {
+  color: var(--accent-primary);
+}
+
+.post-card h3 {
+  font-size: 1.7rem;
+  margin-bottom: 15px;
+  line-height: 1.3;
+  letter-spacing: -0.5px;
+  color: var(--text-primary);
+}
+
+.post-preview {
+  font-size: 1rem;
+  color: var(--text-secondary);
+  margin-bottom: 25px;
+  line-height: 1.7;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.read-more {
+  font-weight: 800;
+  font-size: 0.85rem;
+  color: var(--accent-primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: auto;
+}
+
+/* Premium Effects */
+.luxury-border {
+  border: 1px solid rgba(72, 52, 212, 0.08) !important;
+}
+
+.luxury-glow {
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.06) !important;
+}
+
+.luxury-glow:hover {
+  box-shadow: 0 30px 80px rgba(72, 52, 212, 0.12) !important;
+}
+
+/* Newsletter Section */
+.newsletter-section {
+  margin: 120px 0;
+  padding: 100px 40px;
+  text-align: center;
+  border-radius: 40px;
+  background: linear-gradient(135deg, #ffffff 0%, #f1f2f6 100%);
+}
+
+.newsletter-content h2 {
+  font-size: 3rem;
+  font-weight: 900;
+  margin-bottom: 20px;
+  letter-spacing: -2px;
+}
+
+.newsletter-form {
+  display: flex;
+  gap: 15px;
+  max-width: 650px;
+  margin: 40px auto 0;
+}
+
+.newsletter-form input {
+  flex-grow: 1;
+  padding: 20px 30px;
+  border-radius: 60px;
+  border: 2px solid var(--glass-border);
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.3s ease;
+}
+
+.newsletter-form input:focus {
+  border-color: var(--accent-primary);
+}
+
+.luxury-btn {
+  padding: 20px 40px;
+  background: var(--accent-primary);
+  color: white;
+  border: none;
+  border-radius: 60px;
+  font-weight: 800;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.luxury-btn:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 30px rgba(72, 52, 212, 0.3);
+}
+
+/* Page Specifics */
+.progress-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 6px;
+  background: var(--accent-primary);
+  transform-origin: 0%;
+  z-index: 2000;
+}
+
+.post-detail-page {
+  max-width: 950px;
+  margin: 0 auto;
+  padding-bottom: 120px;
+}
+
+.post-detail-container {
+  overflow: hidden;
+  background: white;
+  border-radius: 40px;
+}
+
+.post-detail-banner {
+  width: 100%;
+  height: 500px;
+  overflow: hidden;
+}
+
+.post-detail-banner img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.post-detail-content {
+  padding: 80px;
+}
+
+.post-title-detail {
+  font-size: 4rem;
+  font-weight: 950;
+  line-height: 1;
+  margin-bottom: 40px;
+  letter-spacing: -3px;
+}
+
+.post-content-render {
+  font-size: 1.25rem;
+  line-height: 2;
+  color: #2d3436;
+}
+
+.post-content-render h2 {
+  font-size: 2.5rem;
+  font-weight: 900;
+  margin-top: 5rem;
+  margin-bottom: 2rem;
+  letter-spacing: -1.5px;
+}
+
+.footer {
+  margin-top: 150px;
+  padding: 100px 0;
+  border-top: 1px solid var(--glass-border);
+  background: white;
+}
+
+/* Responsive Scaling */
+@media (max-width: 1000px) {
+  .hero-card { flex-direction: column; }
+  .hero-image-side, .hero-content-side { width: 100%; }
+  .hero-image-side { height: 350px; }
+  .hero h1 { font-size: 2.8rem; }
+}
+
+@media (max-width: 768px) {
+  .post-title-detail { font-size: 2.8rem; }
+  .post-detail-content { padding: 40px; }
+  .newsletter-section { padding: 60px 20px; }
+  .newsletter-form { flex-direction: column; }
+}
+
+/* --- Final Luxury Finishing --- */
+
+.post-footer {
+  margin-top: 80px;
+}
+
+.post-divider {
+  height: 1px;
+  background: var(--glass-border);
+  margin: 40px 0;
+}
+
+.share-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  padding: 40px 0;
+}
+
+.share-section span {
+  font-size: 0.85rem;
+  letter-spacing: 3px;
+  color: var(--text-muted);
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.share-icons {
+  display: flex;
+  gap: 15px;
+}
+
+.share-btn {
+  padding: 12px 28px;
+  border-radius: 50px;
+  border: 1px solid var(--glass-border);
+  background: white;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.share-btn:hover {
+  background: var(--accent-primary);
+  color: white;
+  border-color: var(--accent-primary);
+  transform: translateY(-5px);
+  box-shadow: 0 15px 30px rgba(72, 52, 212, 0.25);
+}
+
+.detail-newsletter {
+  margin-top: 60px;
+}
+
+.newsletter-mini {
+  padding: 60px 40px;
+  background: white;
+  border-radius: 40px;
+  text-align: center;
+  border: 1px solid var(--glass-border);
+}
+
+.newsletter-mini h3 {
+  font-size: 2rem;
+  font-weight: 900;
+  margin-bottom: 15px;
+  letter-spacing: -1.5px;
+}
+
+.newsletter-mini p {
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+}

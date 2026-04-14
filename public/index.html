@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WordPress Premium Auto-Blog Admin</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Noto+Serif+KR:wght@700&display=swap">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar / Stats -->
+        <aside class="sidebar glass">
+            <div class="logo">
+                <i class="fa-solid fa-wand-magic-sparkles"></i>
+                <span>AI Automator Lab</span>
+            </div>
+            
+            <div class="stats-container">
+                <h3><i class="fa-solid fa-chart-pie"></i> Statistics</h3>
+                <div class="stat-card" id="stat-total">
+                    <span class="label">Total Posts</span>
+                    <span class="value">0</span>
+                </div>
+                <div class="stat-card" id="stat-ai">
+                    <span class="label">AI Generated</span>
+                    <span class="value">0</span>
+                </div>
+                <div class="stat-card" id="stat-rss">
+                    <span class="label">RSS Collected</span>
+                    <span class="value">0</span>
+                </div>
+            </div>
+
+            <div class="config-summary glass">
+                <h3><i class="fa-solid fa-gears"></i> Info</h3>
+                <p id="wp-site-url">Site: Loading...</p>
+                <div class="status-badge" id="scheduler-status">
+                    <i class="fa-solid fa-clock"></i> Scheduler: OFF
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="content">
+            <header>
+                <h1>Premium AI Blog Dashboard</h1>
+                <div class="user-profile">
+                    <span id="health-status"><i class="fa-solid fa-heart-pulse"></i> API Online</span>
+                </div>
+            </header>
+
+            <!-- Generation Tool -->
+            <section class="generation-tool glass">
+                <h2><i class="fa-solid fa-pen-nib"></i> New AI Post</h2>
+                <div class="form-group">
+                    <input type="text" id="topic-input" placeholder="주제나 키워드를 입력하세요 (예: 하이브리드 음악 장르 분석)">
+                    <button id="btn-generate" class="primary-btn">
+                        <span class="btn-text">Generate with AI</span>
+                        <div class="loader" style="display: none;"></div>
+                    </button>
+                </div>
+            </section>
+
+            <!-- Post List -->
+            <section class="post-list-section">
+                <div class="section-header">
+                    <h2><i class="fa-solid fa-list-ul"></i> Recent Posts</h2>
+                    <button id="btn-refresh" class="icon-btn"><i class="fa-solid fa-rotate"></i></button>
+                </div>
+                <div id="posts-container" class="posts-grid">
+                    <!-- Posts will be injected here -->
+                    <div class="loading-state">기존 포스팅을 불러오는 중...</div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Preview Modal -->
+    <div id="preview-modal" class="modal glass-heavy" style="display: none;">
+        <div class="modal-content glass">
+            <div class="modal-header">
+                <h2 id="preview-title">Preview</h2>
+                <button class="close-modal"><i class="fa-solid fa-times"></i></button>
+            </div>
+            <div id="preview-body" class="modal-body"></div>
+            <div class="modal-footer">
+                <button id="btn-publish-now" class="primary-btn">Publish to WordPress</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/app.js"></script>
+</body>
+</html>

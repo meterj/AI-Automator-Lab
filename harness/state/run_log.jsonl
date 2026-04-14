@@ -1,0 +1,2 @@
+{"timestamp": "", "event_type": "intake", "actor": "Router", "status": "success", "risk_level": "Medium", "summary": "사용자 요청을 수신하고 작업 유형을 분류했다.", "details": {"task_type": "", "expected_output": "", "notes": ""}}
+{"timestamp": "", "event_type": "plan", "actor": "Planner", "status": "success", "risk_level": "Medium", "summary": "초기 구현 계획을 작성했다.", "details": {"artifact": "harness/state/implementation_plan.md"}}
