@@ -1,4 +1,4 @@
-// src/types/index.ts - 타입 정의 (Groq 사용)
+// Shared application types.
 
 export interface Post {
   id?: number;
@@ -45,6 +45,7 @@ export interface SchedulerConfig {
   cron: string;
   enabled: boolean;
   mode: 'ai' | 'rss' | 'both';
+  triggerToken: string;
 }
 
 export interface AppConfig {

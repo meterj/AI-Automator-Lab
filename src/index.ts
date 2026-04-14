@@ -1,4 +1,5 @@
 import express, { NextFunction, Request, Response } from 'express';
+import { timingSafeEqual } from 'crypto';
 import cors from 'cors';
 import { config, validateConfig } from './config';
 import { wpClient } from './wordpress/client';
@@ -10,6 +11,34 @@ import { AIGenerationConfig, Post } from './types';
 import { getPostQualityIssues } from './content/quality';
 
 const app = express();
+
+function getScheduleTriggerToken(request: Request): string {
+  const authorization = request.header('authorization');
+
+  if (authorization?.startsWith('Bearer ')) {
+    return authorization.slice('Bearer '.length).trim();
+  }
+
+  return request.header('x-schedule-token')?.trim() || '';
+}
+
+function isAuthorizedScheduleTrigger(request: Request): boolean {
+  const expectedToken = config.scheduler.triggerToken;
+
+  if (!expectedToken) {
+    return true;
+  }
+
+  const providedToken = getScheduleTriggerToken(request);
+  const expectedBuffer = Buffer.from(expectedToken);
+  const providedBuffer = Buffer.from(providedToken);
+
+  if (expectedBuffer.length !== providedBuffer.length) {
+    return false;
+  }
+
+  return timingSafeEqual(expectedBuffer, providedBuffer);
+}
 
 app.use(cors());
 app.use(express.json());
@@ -29,6 +58,7 @@ app.get('/health', (req: Request, res: Response) => {
       wordpress: config.wordpress.siteUrl,
       schedulerEnabled: config.scheduler.enabled,
       rssFeedsCount: config.rss.feeds.length,
+      scheduleTriggerProtected: Boolean(config.scheduler.triggerToken),
     },
   });
 });
@@ -280,11 +310,19 @@ app.get('/api/schedule', (req: Request, res: Response) => {
     enabled: config.scheduler.enabled,
     defaultCron: config.scheduler.cron,
     mode: config.scheduler.mode,
+    triggerProtected: Boolean(config.scheduler.triggerToken),
     jobs: scheduler.getAllJobStatus(),
   });
 });
 
 app.post('/api/schedule/run', async (req: Request, res: Response) => {
+  if (!isAuthorizedScheduleTrigger(req)) {
+    return res.status(401).json({
+      success: false,
+      error: 'Unauthorized schedule trigger',
+    });
+  }
+
   try {
     const { mode = 'both' } = req.body;
 
@@ -296,10 +334,10 @@ app.post('/api/schedule/run', async (req: Request, res: Response) => {
       await scheduler.publishRSSPosts();
     }
 
-    res.json({ success: true, message: 'Schedule run complete' });
+    return res.json({ success: true, message: 'Schedule run complete' });
   } catch (error) {
     console.error('[API] Schedule run error:', error);
-    res.status(500).json({
+    return res.status(500).json({
       error: error instanceof Error ? error.message : 'Unknown error',
     });
   }

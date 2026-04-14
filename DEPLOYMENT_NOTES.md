@@ -17,6 +17,7 @@ Recommended supporting variables:
 
 - `NODE_ENV=production`
 - `RSS_FEEDS=https://techcrunch.com/category/artificial-intelligence/feed/,https://venturebeat.com/category/ai/feed/,https://openai.com/news/rss.xml,https://www.artificialintelligence-news.com/feed/`
+- `SCHEDULE_TRIGGER_TOKEN=use-the-same-random-secret-in-railway-and-github-actions`
 - `SUPABASE_URL=...`
 - `SUPABASE_SERVICE_ROLE_KEY=...`
 - `GROQ_API_KEY=...`
@@ -45,6 +46,7 @@ Expected API state after Railway is configured:
 - The repository now includes a scheduled workflow that calls `POST /api/schedule/run` every day at 00:00 UTC, which is 09:00 in Asia/Seoul.
 - This keeps RSS auto-publishing running even if the Railway internal scheduler remains disabled.
 - You can also trigger the workflow manually from the GitHub Actions tab with `workflow_dispatch`.
+- Add `SCHEDULE_TRIGGER_TOKEN` as a GitHub Actions secret and set the same value in Railway variables before enabling endpoint protection.
 
 ## Notes
 

@@ -20,4 +20,34 @@
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
+  <url>
+    <loc>https://ai-automator-lab.vercel.app/post/13</loc>
+    <lastmod>2026-04-14T15:15:16.354Z</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://ai-automator-lab.vercel.app/post/12</loc>
+    <lastmod>2026-04-14T15:07:48.805Z</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://ai-automator-lab.vercel.app/post/11</loc>
+    <lastmod>2026-04-14T14:50:19.656Z</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://ai-automator-lab.vercel.app/post/10</loc>
+    <lastmod>2026-04-14T14:50:12.861Z</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://ai-automator-lab.vercel.app/post/9</loc>
+    <lastmod>2026-04-14T13:52:58.515Z</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
 </urlset>

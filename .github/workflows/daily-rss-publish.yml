@@ -16,9 +16,18 @@ jobs:
       - name: Trigger RSS publishing on Railway
         env:
           API_URL: https://ai-automator-lab-production.up.railway.app
+          SCHEDULE_TRIGGER_TOKEN: ${{ secrets.SCHEDULE_TRIGGER_TOKEN }}
         run: |
-          curl --fail-with-body \
-            --request POST \
-            --url "$API_URL/api/schedule/run" \
-            --header "Content-Type: application/json" \
+          curl_args=(
+            --fail-with-body
+            --request POST
+            --url "$API_URL/api/schedule/run"
+            --header "Content-Type: application/json"
             --data '{"mode":"rss"}'
+          )
+
+          if [ -n "$SCHEDULE_TRIGGER_TOKEN" ]; then
+            curl_args+=(--header "Authorization: Bearer $SCHEDULE_TRIGGER_TOKEN")
+          fi
+
+          curl "${curl_args[@]}"
