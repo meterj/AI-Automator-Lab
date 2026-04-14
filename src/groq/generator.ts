@@ -158,6 +158,10 @@ Separate each section with the [SECTION_NAME] tags clearly.
     const excerptSource = lead || (body.length > 50 ? body : '');
     const cleanExcerpt = cleanText(excerptSource || content).substring(0, 180);
     const coverImage = pickCoverImage(title, config.keywords);
+    const productionNote = `
+      <p>This article was drafted with AI assistance and shaped into publication format by the AI Automator Lab workflow.</p>
+      <p>Readers should verify fast-moving claims with primary sources before relying on them operationally.</p>
+    `;
 
     // Build Luxury Layout
     let htmlContent = buildCoverFigure(title, coverImage);
@@ -191,6 +195,8 @@ Separate each section with the [SECTION_NAME] tags clearly.
       
       htmlContent += LAYOUT_TEMPLATES.card('Key Strategic Takeaways', `<ul>${summaryList}</ul>`);
     }
+
+    htmlContent += LAYOUT_TEMPLATES.card('Production Note', productionNote);
 
     const finalHtml = LAYOUT_TEMPLATES.wrap(htmlContent);
 

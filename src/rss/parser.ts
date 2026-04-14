@@ -98,9 +98,15 @@ export class RSSCollector {
     htmlContent += `<div style="margin-top: 1.5rem;">${item.content}</div>`;
 
     if (options?.includeSourceLink && item.link) {
+      const publishedAt = item.pubDate
+        ? new Date(item.pubDate).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' })
+        : 'Unknown';
+
       htmlContent += LAYOUT_TEMPLATES.card(
         'Original Source',
-        `<a href="${item.link}" target="_blank" rel="noopener noreferrer" style="color: #1a2a6c; text-decoration: underline;">Read the full article</a>`
+        `<p>Publisher: ${hostname || 'Unknown source'}</p>
+         <p>Published: ${publishedAt}</p>
+         <p><a href="${item.link}" target="_blank" rel="noopener noreferrer" style="color: #1a2a6c; text-decoration: underline;">Read the full article</a></p>`
       );
     }
 
