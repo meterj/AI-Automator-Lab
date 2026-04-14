@@ -5,6 +5,8 @@ import { AppConfig } from './types';
 
 dotenv.config();
 
+const defaultNodeEnv = process.env.NODE_ENV || 'development';
+
 function getEnv(key: string, defaultValue?: string): string {
   const value = process.env[key];
   if (!value && defaultValue === undefined) {
@@ -35,12 +37,12 @@ export const config: AppConfig = {
   },
   scheduler: {
     cron: getEnv('SCHEDULE_CRON', '0 9 * * *'),
-    enabled: getEnv('SCHEDULE_ENABLED', 'false') === 'true',
-    mode: (getEnv('SCHEDULE_MODE', 'ai') as 'ai' | 'rss' | 'both'),
+    enabled: getEnv('SCHEDULE_ENABLED', defaultNodeEnv === 'production' ? 'true' : 'false') === 'true',
+    mode: (getEnv('SCHEDULE_MODE', defaultNodeEnv === 'production' ? 'rss' : 'ai') as 'ai' | 'rss' | 'both'),
   },
   server: {
     port: parseInt(getEnv('PORT', '3000')),
-    nodeEnv: getEnv('NODE_ENV', 'development'),
+    nodeEnv: getEnv('NODE_ENV', defaultNodeEnv),
   },
   database: {
     path: getEnv('DATABASE_PATH', './data/posts.db'),
