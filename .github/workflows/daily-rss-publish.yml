@@ -1,0 +1,24 @@
+name: Daily RSS Publish
+
+on:
+  schedule:
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: daily-rss-publish
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger RSS publishing on Railway
+        env:
+          API_URL: https://ai-automator-lab-production.up.railway.app
+        run: |
+          curl --fail-with-body \
+            --request POST \
+            --url "$API_URL/api/schedule/run" \
+            --header "Content-Type: application/json" \
+            --data '{"mode":"rss"}'

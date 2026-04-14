@@ -5,6 +5,7 @@
 - Frontend: Vercel
 - API / scheduler: Railway
 - Database: Supabase
+- Fallback scheduler: GitHub Actions (`.github/workflows/daily-rss-publish.yml`)
 
 ## Railway variables required for daily RSS publishing
 
@@ -38,6 +39,12 @@ Expected API state after Railway is configured:
 3. Confirm `/api/schedule` returns `enabled: true` and `mode: rss`.
 4. Trigger a manual RSS run via `POST /api/schedule/run` with `{"mode":"rss"}`.
 5. Verify new posts appear in Supabase and on the Vercel frontend.
+
+## GitHub Actions fallback
+
+- The repository now includes a scheduled workflow that calls `POST /api/schedule/run` every day at 00:00 UTC, which is 09:00 in Asia/Seoul.
+- This keeps RSS auto-publishing running even if the Railway internal scheduler remains disabled.
+- You can also trigger the workflow manually from the GitHub Actions tab with `workflow_dispatch`.
 
 ## Notes
 
