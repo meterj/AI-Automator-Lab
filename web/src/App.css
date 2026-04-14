@@ -565,10 +565,66 @@
   max-width: 960px;
 }
 
+.info-shell {
+  display: grid;
+  gap: 28px;
+  max-width: 1380px;
+  margin: 0 auto;
+  padding: 24px 10px 60px;
+}
+
+.info-hero,
+.info-card {
+  padding: 40px;
+  border: 1px solid var(--line);
+  border-radius: 30px;
+  background: rgba(255, 251, 246, 0.82);
+  box-shadow: var(--shadow);
+}
+
+.info-hero {
+  display: grid;
+  gap: 18px;
+  background:
+    linear-gradient(135deg, rgba(203, 83, 49, 0.08), rgba(48, 83, 167, 0.06)),
+    rgba(255, 251, 246, 0.82);
+}
+
+.info-hero h1,
+.info-card h2 {
+  margin: 0;
+}
+
+.info-hero h1 {
+  font-size: clamp(3.2rem, 5vw, 5.4rem);
+  line-height: 0.96;
+}
+
+.info-lead,
+.info-card p {
+  max-width: 60rem;
+  margin: 0;
+  color: var(--page-muted);
+  line-height: 1.85;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.info-card {
+  display: grid;
+  gap: 14px;
+  min-height: 260px;
+}
+
 @media (max-width: 1100px) {
   .signal-strip,
   .archive-shell,
-  .article-layout {
+  .article-layout,
+  .info-grid {
     grid-template-columns: 1fr;
   }
 
@@ -593,7 +649,9 @@
   .article-hero-copy,
   .closing-banner,
   .article-cta,
-  .static-page {
+  .static-page,
+  .info-hero,
+  .info-card {
     padding: 28px 22px;
   }
 
