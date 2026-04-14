@@ -1,76 +1,86 @@
-// src/db/database.ts - Supabase 클라우드 데이터베이스 연동
-
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { config } from '../config';
+import { sanitizeHtmlFragment, sanitizePlainText } from '../content/sanitize';
 import { Post } from '../types';
+
+type SubscriberMetadata = {
+  sourcePage?: string;
+  referrer?: string;
+  userAgent?: string;
+};
+
+type SubscriberRecord = {
+  id: number;
+};
 
 export class PostDatabase {
   private supabase: SupabaseClient | null = null;
-  private initialized: boolean = false;
+  private initialized = false;
 
-  constructor() {}
-
-  /**
-   * 데이터베이스 초기화 (비동기)
-   */
   async initialize(): Promise<void> {
-    if (this.initialized) return;
-    
+    if (this.initialized) {
+      return;
+    }
+
     const { url, serviceRoleKey } = config.supabase;
-    
+
     if (!url || !serviceRoleKey) {
-      throw new Error('Supabase URL 또는 Service Role Key가 설정되지 않았습니다.');
+      throw new Error('Supabase URL and service role key must be configured.');
     }
 
     this.supabase = createClient(url, serviceRoleKey);
     this.initialized = true;
-    console.log('✅ Supabase 클라이언트 초기화 완료');
+    console.log('[Database] Supabase client initialized');
   }
 
-  /**
-   * 초기화 확인
-   */
   private ensureInitialized(): void {
     if (!this.supabase || !this.initialized) {
-      throw new Error('데이터베이스가 초기화되지 않았습니다. db.initialize()를 먼저 호출하세요.');
+      throw new Error('Database is not initialized. Call db.initialize() before use.');
     }
   }
 
-  /**
-   * 게시글 저장
-   */
+  private normalizePost(post: Post): Post {
+    return {
+      ...post,
+      title: sanitizePlainText(post.title),
+      excerpt: post.excerpt ? sanitizePlainText(post.excerpt) : undefined,
+      content: sanitizeHtmlFragment(post.content),
+      categories: post.categories?.map((category) => sanitizePlainText(category)).filter(Boolean),
+      tags: post.tags?.map((tag) => sanitizePlainText(tag)).filter(Boolean),
+    };
+  }
+
   async savePost(post: Post): Promise<Post> {
     this.ensureInitialized();
-    
+
+    const normalizedPost = this.normalizePost(post);
+
     const { data, error } = await this.supabase!
       .from('posts')
       .insert({
-        title: post.title,
-        content: post.content,
-        excerpt: post.excerpt,
-        categories: post.categories?.join(','),
-        tags: post.tags?.join(','),
-        status: post.status,
-        published_at: post.publishedAt?.toISOString(),
-        wordpress_id: post.wordpressId,
-        wordpress_url: post.wordpressUrl,
-        source: post.source,
-        source_url: post.sourceUrl
+        title: normalizedPost.title,
+        content: normalizedPost.content,
+        excerpt: normalizedPost.excerpt,
+        categories: normalizedPost.categories?.join(','),
+        tags: normalizedPost.tags?.join(','),
+        status: normalizedPost.status,
+        published_at: normalizedPost.publishedAt?.toISOString(),
+        wordpress_id: normalizedPost.wordpressId,
+        wordpress_url: normalizedPost.wordpressUrl,
+        source: normalizedPost.source,
+        source_url: normalizedPost.sourceUrl,
       })
       .select()
       .single();
 
     if (error) {
-      console.error('❌ 게시글 저장 실패:', error);
+      console.error('[Database] Failed to save post:', error);
       throw error;
     }
 
     return this.mapDataToPost(data);
   }
 
-  /**
-   * ID로 게시글 조회
-   */
   async getPostById(id: number): Promise<Post | null> {
     this.ensureInitialized();
 
@@ -80,29 +90,32 @@ export class PostDatabase {
       .eq('id', id)
       .single();
 
-    if (error || !data) return null;
+    if (error || !data) {
+      return null;
+    }
+
     return this.mapDataToPost(data);
   }
 
-  /**
-   * URL로 중복 체크
-   */
   async existsByUrl(url: string): Promise<boolean> {
     this.ensureInitialized();
-    if (!url) return false;
-    
+
+    if (!url) {
+      return false;
+    }
+
     const { count, error } = await this.supabase!
       .from('posts')
       .select('*', { count: 'exact', head: true })
       .eq('source_url', url);
 
-    if (error) return false;
+    if (error) {
+      return false;
+    }
+
     return (count || 0) > 0;
   }
 
-  /**
-   * 게시글 목록 조회
-   */
   async getPosts(options?: {
     source?: 'ai' | 'rss' | 'manual';
     status?: 'draft' | 'publish' | 'pending';
@@ -110,7 +123,7 @@ export class PostDatabase {
     offset?: number;
   }): Promise<Post[]> {
     this.ensureInitialized();
-    
+
     let query = this.supabase!.from('posts').select('*');
 
     if (options?.source) {
@@ -131,29 +144,57 @@ export class PostDatabase {
 
     const { data, error } = await query;
 
-    if (error || !data) return [];
-    return data.map(item => this.mapDataToPost(item));
+    if (error || !data) {
+      return [];
+    }
+
+    return data.map((item) => this.mapDataToPost(item));
   }
 
-  /**
-   * 게시글 업데이트
-   */
   async updatePost(id: number, updates: Partial<Post>): Promise<boolean> {
     this.ensureInitialized();
-    
-    const dbUpdates: any = {};
+
+    const normalizedUpdates = this.normalizePost({
+      title: updates.title || '',
+      content: updates.content || '',
+      status: updates.status || 'draft',
+      createdAt: updates.createdAt || new Date(),
+      source: updates.source || 'manual',
+      excerpt: updates.excerpt,
+      categories: updates.categories,
+      tags: updates.tags,
+      publishedAt: updates.publishedAt,
+      wordpressId: updates.wordpressId,
+      wordpressUrl: updates.wordpressUrl,
+      sourceUrl: updates.sourceUrl,
+    });
+
+    const dbUpdates: Record<string, unknown> = {};
     const fieldMapping: Record<string, string> = {
       publishedAt: 'published_at',
       wordpressId: 'wordpress_id',
-      wordpressUrl: 'wordpress_url'
+      wordpressUrl: 'wordpress_url',
+      sourceUrl: 'source_url',
     };
 
-    for (const [key, value] of Object.entries(updates)) {
+    for (const [key, value] of Object.entries({
+      ...updates,
+      title: updates.title ? normalizedUpdates.title : undefined,
+      excerpt: updates.excerpt ? normalizedUpdates.excerpt : undefined,
+      content: updates.content ? normalizedUpdates.content : undefined,
+      categories: updates.categories ? normalizedUpdates.categories : undefined,
+      tags: updates.tags ? normalizedUpdates.tags : undefined,
+    })) {
+      if (value === undefined) {
+        continue;
+      }
+
       const dbKey = fieldMapping[key] || key;
+
       if (key === 'categories' || key === 'tags') {
-        dbUpdates[dbKey] = (value as string[])?.join(',');
+        dbUpdates[dbKey] = (value as string[]).join(',');
       } else if (key === 'publishedAt') {
-        dbUpdates[dbKey] = (value as Date)?.toISOString();
+        dbUpdates[dbKey] = (value as Date).toISOString();
       } else {
         dbUpdates[dbKey] = value;
       }
@@ -165,75 +206,123 @@ export class PostDatabase {
       .eq('id', id);
 
     if (error) {
-      console.error('❌ 게시글 업데이트 실패:', error);
+      console.error('[Database] Failed to update post:', error);
       return false;
     }
-    
+
     return true;
   }
 
-  /**
-   * 게시글 삭제
-   */
   async deletePost(id: number): Promise<boolean> {
     this.ensureInitialized();
-    
+
     const { error } = await this.supabase!
       .from('posts')
       .delete()
       .eq('id', id);
 
-    if (error) return false;
-    return true;
+    return !error;
   }
 
-  /**
-   * 통계 조회
-   */
   async getStats(): Promise<{
     total: number;
     bySource: Record<string, number>;
     byStatus: Record<string, number>;
   }> {
     this.ensureInitialized();
-    
+
     const { data: allPosts, error } = await this.supabase!.from('posts').select('source, status');
 
-    if (error || !allPosts) return { total: 0, bySource: {}, byStatus: {} };
+    if (error || !allPosts) {
+      return { total: 0, bySource: {}, byStatus: {} };
+    }
 
-    const total = allPosts.length;
     const bySource: Record<string, number> = {};
     const byStatus: Record<string, number> = {};
 
-    allPosts.forEach(post => {
+    allPosts.forEach((post) => {
       bySource[post.source] = (bySource[post.source] || 0) + 1;
       byStatus[post.status] = (byStatus[post.status] || 0) + 1;
     });
 
-    return { total, bySource, byStatus };
+    return {
+      total: allPosts.length,
+      bySource,
+      byStatus,
+    };
   }
 
-  /**
-   * 데이터베이스 결과 매핑
-   */
-  private mapDataToPost(data: any): Post {
+  async subscribe(email: string, metadata?: SubscriberMetadata): Promise<'created' | 'existing'> {
+    this.ensureInitialized();
+
+    const normalizedEmail = email.trim().toLowerCase();
+
+    const { data: existing, error: lookupError } = await this.supabase!
+      .from('subscribers')
+      .select('id')
+      .eq('email', normalizedEmail)
+      .maybeSingle<SubscriberRecord>();
+
+    if (lookupError) {
+      console.error('[Database] Failed to look up subscriber:', lookupError);
+      throw lookupError;
+    }
+
+    const payload = {
+      email: normalizedEmail,
+      status: 'active',
+      source_page: metadata?.sourcePage || null,
+      referrer: metadata?.referrer || null,
+      user_agent: metadata?.userAgent || null,
+      last_seen_at: new Date().toISOString(),
+    };
+
+    if (existing) {
+      const { error } = await this.supabase!
+        .from('subscribers')
+        .update(payload)
+        .eq('id', existing.id);
+
+      if (error) {
+        console.error('[Database] Failed to update subscriber:', error);
+        throw error;
+      }
+
+      return 'existing';
+    }
+
+    const { error } = await this.supabase!
+      .from('subscribers')
+      .insert({
+        ...payload,
+        subscribed_at: new Date().toISOString(),
+      });
+
+    if (error) {
+      console.error('[Database] Failed to create subscriber:', error);
+      throw error;
+    }
+
+    return 'created';
+  }
+
+  private mapDataToPost(data: Record<string, unknown>): Post {
     return {
-      id: data.id,
-      title: data.title,
-      content: data.content,
-      excerpt: data.excerpt,
-      categories: data.categories?.split(',').filter(Boolean),
-      tags: data.tags?.split(',').filter(Boolean),
-      status: data.status,
-      createdAt: new Date(data.created_at),
-      publishedAt: data.published_at ? new Date(data.published_at) : undefined,
-      wordpressId: data.wordpress_id,
-      wordpressUrl: data.wordpress_url,
-      source: data.source,
-      sourceUrl: data.source_url
+      id: data.id as number,
+      title: data.title as string,
+      content: data.content as string,
+      excerpt: data.excerpt as string | undefined,
+      categories: typeof data.categories === 'string' ? data.categories.split(',').filter(Boolean) : undefined,
+      tags: typeof data.tags === 'string' ? data.tags.split(',').filter(Boolean) : undefined,
+      status: data.status as Post['status'],
+      createdAt: new Date(data.created_at as string),
+      publishedAt: data.published_at ? new Date(data.published_at as string) : undefined,
+      wordpressId: data.wordpress_id as number | undefined,
+      wordpressUrl: data.wordpress_url as string | undefined,
+      source: data.source as Post['source'],
+      sourceUrl: data.source_url as string | undefined,
     };
   }
 }
 
-// 싱글톤 인스턴스
 export const db = new PostDatabase();

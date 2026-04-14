@@ -3,6 +3,8 @@ import axios from 'axios';
 import { Link, useParams } from 'react-router-dom';
 import { motion, useScroll, useSpring } from 'framer-motion';
 import { applySeo } from '../seo';
+import SubscribeForm from '../components/SubscribeForm';
+import { sanitizeHtml } from '../lib/sanitizeHtml';
 
 interface Post {
   id: string;
@@ -28,7 +30,7 @@ const DETAIL_IMAGES = [
 const extractFirstImage = (html: string | undefined): string | null => {
   if (!html) return null;
   const match = html.match(/<img[^>]+src=["']([^"']+)["']/i);
-  return match?.[1] || null;
+  return match?.[1] && /^https?:\/\//i.test(match[1]) ? match[1] : null;
 };
 
 const PostDetail: React.FC = () => {
@@ -77,6 +79,7 @@ const PostDetail: React.FC = () => {
   const heroImage =
     extractFirstImage(post.content) ||
     `https://images.unsplash.com/${DETAIL_IMAGES[fallbackIndex]}?auto=format&fit=crop&q=80&w=1800`;
+  const safeContent = sanitizeHtml(post.content);
 
   useEffect(() => {
     if (!post) return;
@@ -162,7 +165,7 @@ const PostDetail: React.FC = () => {
           </aside>
 
           <article className="article-body">
-            <div className="article-content" dangerouslySetInnerHTML={{ __html: post.content }} />
+            <div className="article-content" dangerouslySetInnerHTML={{ __html: safeContent }} />
           </article>
         </section>
 
@@ -172,6 +175,7 @@ const PostDetail: React.FC = () => {
           <p>
             Once the content pipeline is hardened, this space should connect strong stories to a working newsletter or membership funnel instead of staying decorative.
           </p>
+          <SubscribeForm sourcePage={`post-${post.id}-cta`} buttonLabel="Get the daily briefing" />
           <Link to="/" className="primary-link">
             Return to the briefing
           </Link>

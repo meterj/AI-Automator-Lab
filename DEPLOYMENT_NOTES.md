@@ -41,6 +41,11 @@ Expected API state after Railway is configured:
 4. Trigger a manual RSS run via `POST /api/schedule/run` with `{"mode":"rss"}`.
 5. Verify new posts appear in Supabase and on the Vercel frontend.
 
+## Newsletter subscriber setup
+
+- Run [subscribers.sql](F:\CCP\blog\supabase\subscribers.sql) once in the Supabase SQL editor.
+- After that, `POST /api/subscribers` will store newsletter signups and the homepage/article signup forms will become functional.
+
 ## GitHub Actions fallback
 
 - The repository now includes a scheduled workflow that calls `POST /api/schedule/run` every day at 00:00 UTC, which is 09:00 in Asia/Seoul.

@@ -372,6 +372,26 @@
   cursor: pointer;
 }
 
+.closing-actions button:disabled {
+  opacity: 0.72;
+  cursor: wait;
+}
+
+.subscribe-form {
+  display: grid;
+  gap: 10px;
+}
+
+.subscribe-feedback {
+  margin: 0;
+  color: var(--page-muted);
+  font-size: 0.95rem;
+}
+
+.subscribe-feedback.is-error {
+  color: #9f2e16;
+}
+
 .site-footer {
   padding: 18px 0 0;
   border-top: 1px solid var(--line);

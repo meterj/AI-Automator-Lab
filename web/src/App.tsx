@@ -49,7 +49,7 @@ const App: React.FC = () => {
             element={
               <StaticPage
                 title="Privacy Policy"
-                body="This site may use analytics, server logs, and newsletter collection to understand readership and improve the product. If email signup is enabled, subscriber data is used only for publication updates and site operations."
+                body="This site may use analytics, server logs, and newsletter collection to understand readership and improve the product. Subscriber email addresses are used for publication updates and site operations, and are stored in the connected Supabase project."
               />
             }
           />

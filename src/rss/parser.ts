@@ -1,5 +1,6 @@
 import Parser from 'rss-parser';
 import { config } from '../config';
+import { sanitizeHtmlFragment, sanitizePlainText, escapeHtmlAttribute, toSafeHttpUrl } from '../content/sanitize';
 import { RSSItem, Post } from '../types';
 import { LAYOUT_TEMPLATES } from '../wordpress/templates/post-style';
 
@@ -76,28 +77,35 @@ export class RSSCollector {
       suffix?: string;
     }
   ): Post {
+    const safeTitle = sanitizePlainText(item.title) || 'Untitled';
+    const safeContent = sanitizeHtmlFragment(item.content, { removeStyleTags: true });
+    const safeImageUrl = toSafeHttpUrl(item.imageUrl);
+    const safeLink = toSafeHttpUrl(item.link);
+    const safeAuthor = sanitizePlainText(item.author || '');
+    const hostname = safeLink ? this.extractHostname(safeLink) : null;
+
     let htmlContent = '';
 
-    if (item.imageUrl) {
+    if (safeImageUrl) {
       htmlContent += `
         <figure style="margin: 0 0 1.75rem;">
           <img
-            src="${item.imageUrl}"
-            alt="${item.title.replace(/"/g, '&quot;')}"
+            src="${safeImageUrl}"
+            alt="${escapeHtmlAttribute(safeTitle)}"
             style="width: 100%; max-height: 520px; object-fit: cover; border-radius: 18px; display: block;"
           />
         </figure>
       `;
     }
 
-    const hostname = item.link ? this.extractHostname(item.link) : null;
-    const sourceText = item.author
-      ? `${item.author}${hostname ? ` · ${hostname}` : ''}`
+    const sourceText = safeAuthor
+      ? `${safeAuthor}${hostname ? ` | ${hostname}` : ''}`
       : hostname || 'Collected from RSS';
-    htmlContent += LAYOUT_TEMPLATES.lead(`${item.title}\n\n${sourceText}`);
-    htmlContent += `<div style="margin-top: 1.5rem;">${item.content}</div>`;
 
-    if (options?.includeSourceLink && item.link) {
+    htmlContent += LAYOUT_TEMPLATES.lead(`${safeTitle}\n\n${sourceText}`);
+    htmlContent += `<div style="margin-top: 1.5rem;">${safeContent}</div>`;
+
+    if (options?.includeSourceLink && safeLink) {
       const publishedAt = item.pubDate
         ? new Date(item.pubDate).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' })
         : 'Unknown';
@@ -106,26 +114,28 @@ export class RSSCollector {
         'Original Source',
         `<p>Publisher: ${hostname || 'Unknown source'}</p>
          <p>Published: ${publishedAt}</p>
-         <p><a href="${item.link}" target="_blank" rel="noopener noreferrer" style="color: #1a2a6c; text-decoration: underline;">Read the full article</a></p>`
+         <p><a href="${safeLink}" target="_blank" rel="noopener noreferrer" style="color: #1a2a6c; text-decoration: underline;">Read the full article</a></p>`
       );
     }
 
-    const finalHtml = LAYOUT_TEMPLATES.wrap(htmlContent);
+    const excerpt = sanitizePlainText(safeContent).slice(0, 200);
 
     return {
-      title: item.title,
-      content: finalHtml,
-      excerpt: item.content.substring(0, 200) + '...',
-      categories: item.categories,
+      title: safeTitle,
+      content: LAYOUT_TEMPLATES.wrap(htmlContent),
+      excerpt: excerpt ? `${excerpt}...` : safeTitle,
+      categories: item.categories?.map((category) => sanitizePlainText(category)).filter(Boolean),
       status: 'draft',
       createdAt: new Date(),
       source: 'rss',
-      sourceUrl: item.link,
+      sourceUrl: safeLink,
     };
   }
 
   filterByKeywords(items: RSSItem[], keywords: string[]): RSSItem[] {
-    if (keywords.length === 0) return items;
+    if (keywords.length === 0) {
+      return items;
+    }
 
     const lowerKeywords = keywords.map((keyword) => keyword.toLowerCase());
 
@@ -142,7 +152,10 @@ export class RSSCollector {
     cutoffDate.setDate(cutoffDate.getDate() - days);
 
     return items.filter((item) => {
-      if (!item.pubDate) return false;
+      if (!item.pubDate) {
+        return false;
+      }
+
       return new Date(item.pubDate) >= cutoffDate;
     });
   }

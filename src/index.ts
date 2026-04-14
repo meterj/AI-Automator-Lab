@@ -8,6 +8,7 @@ import { rssCollector } from './rss/parser';
 import { scheduler } from './scheduler/cron';
 import { db } from './db/database';
 import { AIGenerationConfig, Post } from './types';
+import { sanitizeHtmlFragment } from './content/sanitize';
 import { getPostQualityIssues } from './content/quality';
 
 const app = express();
@@ -69,6 +70,41 @@ app.get('/api/stats', async (req: Request, res: Response) => {
     res.json(stats);
   } catch {
     res.status(500).json({ error: 'Failed to fetch stats' });
+  }
+});
+
+app.post('/api/subscribers', async (req: Request, res: Response) => {
+  try {
+    const email = typeof req.body?.email === 'string' ? req.body.email.trim().toLowerCase() : '';
+    const sourcePage = typeof req.body?.sourcePage === 'string' ? req.body.sourcePage.trim() : 'site';
+    const referrer = typeof req.body?.referrer === 'string' ? req.body.referrer.trim() : '';
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return res.status(400).json({
+        success: false,
+        error: 'A valid email address is required.',
+      });
+    }
+
+    const result = await db.subscribe(email, {
+      sourcePage,
+      referrer,
+      userAgent: req.header('user-agent') || '',
+    });
+
+    return res.json({
+      success: true,
+      status: result,
+      message: result === 'created'
+        ? 'You are now subscribed to the briefing.'
+        : 'This email is already subscribed. We refreshed your status.',
+    });
+  } catch (error) {
+    console.error('[API] Subscriber save error:', error);
+    return res.status(500).json({
+      success: false,
+      error: 'Subscriber storage is not ready yet. Check the Supabase subscribers table.',
+    });
   }
 });
 
@@ -259,7 +295,7 @@ app.post('/api/publish/manual', async (req: Request, res: Response) => {
 
     const post: Post = {
       title,
-      content,
+      content: sanitizeHtmlFragment(content),
       categories,
       tags,
       status,

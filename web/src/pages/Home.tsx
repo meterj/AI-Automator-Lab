@@ -3,6 +3,7 @@ import axios from 'axios';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { applySeo } from '../seo';
+import SubscribeForm from '../components/SubscribeForm';
 
 interface Post {
   id: string;
@@ -44,7 +45,7 @@ const cleanContent = (text: string | undefined): string => {
 const extractFirstImage = (html: string | undefined): string | null => {
   if (!html) return null;
   const match = html.match(/<img[^>]+src=["']([^"']+)["']/i);
-  return match?.[1] || null;
+  return match?.[1] && /^https?:\/\//i.test(match[1]) ? match[1] : null;
 };
 
 const getStoryImage = (post: Post, index: number) =>
@@ -294,10 +295,7 @@ const Home: React.FC = () => {
         <p>
           The page now has stronger visual identity. The next conversion step is replacing the decorative signup with a real subscriber pipeline and editorial cadence.
         </p>
-        <div className="closing-actions">
-          <input type="email" placeholder="Your work email" aria-label="Email address" />
-          <button type="button">Join the briefing</button>
-        </div>
+        <SubscribeForm sourcePage="home-closing-banner" />
       </section>
     </main>
   );
