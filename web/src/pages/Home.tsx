@@ -39,13 +39,19 @@ const TECH_IMAGES = [
 
 const Home: React.FC = () => {
   const [posts, setPosts] = useState<Post[]>([]);
+  const [filteredPosts, setFilteredPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [activeCategory, setActiveCategory] = useState('All');
+
+  const categories = ['All', 'AI Trends', 'Automation', 'Future Tech', 'Insight'];
 
   useEffect(() => {
     const fetchPosts = async () => {
       try {
         const res = await axios.get(`${API_BASE}/posts`);
         setPosts(res.data);
+        setFilteredPosts(res.data);
       } catch (err) {
         console.error('Failed to fetch posts:', err);
       } finally {
@@ -54,6 +60,27 @@ const Home: React.FC = () => {
     };
     fetchPosts();
   }, []);
+
+  // Real-time Filtering Logic
+  useEffect(() => {
+    let result = posts;
+    
+    if (activeCategory !== 'All') {
+      result = result.filter(post => 
+        post.content?.toLowerCase().includes(activeCategory.toLowerCase()) ||
+        post.title?.toLowerCase().includes(activeCategory.toLowerCase())
+      );
+    }
+
+    if (searchTerm) {
+      result = result.filter(post => 
+        post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (post.excerpt && post.excerpt.toLowerCase().includes(searchTerm.toLowerCase()))
+      );
+    }
+
+    setFilteredPosts(result);
+  }, [searchTerm, activeCategory, posts]);
 
   return (
     <main className="container">
@@ -88,16 +115,39 @@ const Home: React.FC = () => {
       )}
 
       {/* Grid Section */}
-      <section className="section">
-        <h2 className="section-title Montserrat">
-          <span className="accent-dot"></span> CURATED STORIES
-        </h2>
+        <div className="discovery-header">
+          <h2 className="section-title Montserrat">
+            <span className="accent-dot"></span> CURATED STORIES
+          </h2>
+          <div className="search-bar-wrapper">
+            <input 
+              type="text" 
+              placeholder="Search insights..." 
+              className="search-input"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+            <span className="search-icon">🔍</span>
+          </div>
+        </div>
+
+        <div className="category-tabs">
+          {categories.map(cat => (
+            <button 
+              key={cat}
+              className={`category-tab ${activeCategory === cat ? 'active' : ''}`}
+              onClick={() => setActiveCategory(cat)}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
         
         {loading ? (
           <div className="loading">매거진 기사를 준비하는 중...</div>
         ) : (
           <div className="posts-grid">
-            {posts.slice(1, 10).map((post, index) => (
+            {filteredPosts.slice(0, 12).map((post, index) => (
               <motion.article 
                 key={post.id} 
                 className="post-card glass-card luxury-border luxury-glow"
