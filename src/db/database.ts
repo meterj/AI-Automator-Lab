@@ -13,6 +13,11 @@ type SubscriberRecord = {
   id: number;
 };
 
+type SubscriberReadiness = {
+  ready: boolean;
+  count: number;
+};
+
 export class PostDatabase {
   private supabase: SupabaseClient | null = null;
   private initialized = false;
@@ -228,13 +233,15 @@ export class PostDatabase {
     total: number;
     bySource: Record<string, number>;
     byStatus: Record<string, number>;
+    subscribers: SubscriberReadiness;
   }> {
     this.ensureInitialized();
 
     const { data: allPosts, error } = await this.supabase!.from('posts').select('source, status');
+    const subscribers = await this.getSubscriberReadiness();
 
     if (error || !allPosts) {
-      return { total: 0, bySource: {}, byStatus: {} };
+      return { total: 0, bySource: {}, byStatus: {}, subscribers };
     }
 
     const bySource: Record<string, number> = {};
@@ -249,6 +256,27 @@ export class PostDatabase {
       total: allPosts.length,
       bySource,
       byStatus,
+      subscribers,
+    };
+  }
+
+  async getSubscriberReadiness(): Promise<SubscriberReadiness> {
+    this.ensureInitialized();
+
+    const { count, error } = await this.supabase!
+      .from('subscribers')
+      .select('id', { count: 'exact', head: true });
+
+    if (error) {
+      return {
+        ready: false,
+        count: 0,
+      };
+    }
+
+    return {
+      ready: true,
+      count: count || 0,
     };
   }
 

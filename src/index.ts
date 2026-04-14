@@ -51,17 +51,29 @@ app.use((req: Request, res: Response, next: NextFunction) => {
   next();
 });
 
-app.get('/health', (req: Request, res: Response) => {
-  res.json({
-    status: 'ok',
-    timestamp: new Date().toISOString(),
-    config: {
-      wordpress: config.wordpress.siteUrl,
-      schedulerEnabled: config.scheduler.enabled,
-      rssFeedsCount: config.rss.feeds.length,
-      scheduleTriggerProtected: Boolean(config.scheduler.triggerToken),
-    },
-  });
+app.get('/health', async (req: Request, res: Response) => {
+  try {
+    const subscribers = await db.getSubscriberReadiness();
+
+    res.json({
+      status: 'ok',
+      timestamp: new Date().toISOString(),
+      config: {
+        wordpress: config.wordpress.siteUrl,
+        schedulerEnabled: config.scheduler.enabled,
+        rssFeedsCount: config.rss.feeds.length,
+        scheduleTriggerProtected: Boolean(config.scheduler.triggerToken),
+        subscriberStorageReady: subscribers.ready,
+        subscriberCount: subscribers.count,
+      },
+    });
+  } catch {
+    res.status(500).json({
+      status: 'error',
+      timestamp: new Date().toISOString(),
+      error: 'Failed to read health status',
+    });
+  }
 });
 
 app.get('/api/stats', async (req: Request, res: Response) => {

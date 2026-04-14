@@ -45,6 +45,12 @@ Expected API state after Railway is configured:
 
 - Run [subscribers.sql](F:\CCP\blog\supabase\subscribers.sql) once in the Supabase SQL editor.
 - After that, `POST /api/subscribers` will store newsletter signups and the homepage/article signup forms will become functional.
+- `/health` now reports `subscriberStorageReady` and `subscriberCount` so you can confirm the table is live.
+
+## Ads.txt
+
+- [ads.txt](F:\CCP\blog\web\public\ads.txt) has been added as a placeholder.
+- Replace it with your real network entry after AdSense or another ad platform approves the site.
 
 ## GitHub Actions fallback
 
