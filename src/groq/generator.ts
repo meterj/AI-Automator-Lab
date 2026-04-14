@@ -4,6 +4,7 @@ import axios, { AxiosInstance } from 'axios';
 import { config } from '../config';
 import { Post, AIGenerationConfig } from '../types';
 import { LAYOUT_TEMPLATES } from '../wordpress/templates/post-style';
+import { buildCoverFigure, pickCoverImage } from '../content/cover-image';
 
 export class AIGenerator {
   private groq: AxiosInstance;
@@ -134,9 +135,13 @@ Separate each section with the [SECTION_NAME] tags clearly.
       }
     }
 
-    const title = sections['TITLE']?.trim() || config.topic;
+    const fallbackLines = content.split('\n').map(line => line.trim()).filter(Boolean);
+    const fallbackTitle = fallbackLines[0]?.replace(/^#+\s*/, '') || config.topic;
+    const fallbackBody = fallbackLines.slice(1).join('\n').trim() || content.trim();
+
+    const title = sections['TITLE']?.trim() || fallbackTitle || config.topic;
     const lead = sections['LEAD']?.trim() || '';
-    const body = sections['BODY']?.trim() || '';
+    const body = sections['BODY']?.trim() || fallbackBody;
     const insight = sections['INSIGHT']?.trim() || '';
     const summary = sections['SUMMARY']?.trim() || '';
 
@@ -151,10 +156,11 @@ Separate each section with the [SECTION_NAME] tags clearly.
     };
 
     const excerptSource = lead || (body.length > 50 ? body : '');
-    const cleanExcerpt = cleanText(excerptSource).substring(0, 180);
+    const cleanExcerpt = cleanText(excerptSource || content).substring(0, 180);
+    const coverImage = pickCoverImage(title, config.keywords);
 
     // Build Luxury Layout
-    let htmlContent = '';
+    let htmlContent = buildCoverFigure(title, coverImage);
     
     if (lead) {
       htmlContent += LAYOUT_TEMPLATES.lead(lead);
@@ -165,6 +171,10 @@ Separate each section with the [SECTION_NAME] tags clearly.
       .replace(/^###\s+(.*)/gm, '<h3>$1</h3>')
       .replace(/\r?\n\r?\n/g, '</div><div style="margin-bottom: 2rem;">')
       .trim();
+
+    if (!formattedBody) {
+      formattedBody = `<p>${cleanText(content)}</p>`;
+    }
     
     htmlContent += `<div style="margin-top: 2rem;">${formattedBody}</div>`;
 

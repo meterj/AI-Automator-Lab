@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://ai-automator-lab.vercel.app/sitemap.xml

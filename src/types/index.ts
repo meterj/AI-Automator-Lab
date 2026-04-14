@@ -23,6 +23,7 @@ export interface RSSItem {
   pubDate?: string;
   author?: string;
   categories?: string[];
+  imageUrl?: string;
 }
 
 export interface AIGenerationConfig {
