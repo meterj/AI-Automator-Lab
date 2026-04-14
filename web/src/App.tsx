@@ -82,6 +82,33 @@ const App: React.FC = () => {
             }
           />
           <Route
+            path="/authors/desk"
+            element={
+              <InfoPage
+                eyebrow="Author"
+                title="AI Automator Lab Desk"
+                description="This is the standing editorial byline for AI Automator Lab. It represents the blended workflow of source collection, automation, and final publication review used across the site."
+                path="/authors/desk"
+                ctaLabel="Read the editorial policy"
+                ctaHref="/editorial-policy"
+                sections={[
+                  {
+                    heading: 'What this byline means',
+                    body: 'The desk byline is used for stories produced through the site’s editorial system rather than a single named reporter. It signals that the article belongs to the publication workflow, not to an anonymous scraped feed.',
+                  },
+                  {
+                    heading: 'Editorial responsibility',
+                    body: 'Even when automation helps draft or format a story, the publication still owns the presentation, source path, and archive quality. The desk exists to make that accountability explicit.',
+                  },
+                  {
+                    heading: 'Where to question a story',
+                    body: 'If a reader needs a correction, attribution fix, or update, the right path is the site contact page or the footer email. A visible byline is part of making those requests actionable.',
+                  },
+                ]}
+              />
+            }
+          />
+          <Route
             path="/editorial-policy"
             element={
               <InfoPage
@@ -196,6 +223,7 @@ const App: React.FC = () => {
           <div className="footer-links">
             <Link to="/about">About</Link>
             <Link to="/contact">Contact</Link>
+            <Link to="/authors/desk">Desk</Link>
             <Link to="/editorial-policy">Editorial Policy</Link>
             <Link to="/ai-policy">AI Disclosure</Link>
             <Link to="/privacy">Privacy</Link>

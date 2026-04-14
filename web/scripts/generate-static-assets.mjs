@@ -49,6 +49,7 @@ function buildSitemap(posts) {
   const staticUrls = [
     { loc: `${SITE_URL}/`, changefreq: 'daily', priority: '1.0' },
     { loc: `${SITE_URL}/about`, changefreq: 'monthly', priority: '0.5' },
+    { loc: `${SITE_URL}/authors/desk`, changefreq: 'monthly', priority: '0.5' },
     { loc: `${SITE_URL}/contact`, changefreq: 'monthly', priority: '0.5' },
     { loc: `${SITE_URL}/editorial-policy`, changefreq: 'monthly', priority: '0.6' },
     { loc: `${SITE_URL}/ai-policy`, changefreq: 'monthly', priority: '0.6' },

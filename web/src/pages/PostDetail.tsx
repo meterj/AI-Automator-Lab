@@ -33,6 +33,28 @@ const extractFirstImage = (html: string | undefined): string | null => {
   return match?.[1] && /^https?:\/\//i.test(match[1]) ? match[1] : null;
 };
 
+const getAuthorName = (source: string) => {
+  switch (source) {
+    case 'rss':
+      return 'AI Automator Lab Wire Desk';
+    case 'manual':
+      return 'AI Automator Lab Editorial Desk';
+    default:
+      return 'AI Automator Lab Research Desk';
+  }
+};
+
+const getSourceLabel = (source: string) => {
+  switch (source) {
+    case 'rss':
+      return 'Wire Report';
+    case 'manual':
+      return 'Editorial';
+    default:
+      return 'AI Analysis';
+  }
+};
+
 const PostDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [post, setPost] = useState<Post | null>(null);
@@ -80,6 +102,8 @@ const PostDetail: React.FC = () => {
     extractFirstImage(post.content) ||
     `https://images.unsplash.com/${DETAIL_IMAGES[fallbackIndex]}?auto=format&fit=crop&q=80&w=1800`;
   const safeContent = sanitizeHtml(post.content);
+  const authorName = getAuthorName(post.source);
+  const sourceLabel = getSourceLabel(post.source);
 
   useEffect(() => {
     if (!post) return;
@@ -91,8 +115,9 @@ const PostDetail: React.FC = () => {
       image: heroImage,
       type: 'article',
       articlePublishedTime: new Date(post.createdAt).toISOString(),
+      authorName,
     });
-  }, [heroImage, post]);
+  }, [authorName, heroImage, post]);
 
   return (
     <>
@@ -118,7 +143,8 @@ const PostDetail: React.FC = () => {
             <p className="eyebrow">Feature article</p>
             <h1 className="display-serif">{post.title}</h1>
             <div className="article-meta">
-              <span>{post.source.toUpperCase()}</span>
+              <Link to="/authors/desk">{authorName}</Link>
+              <span>{sourceLabel}</span>
               <span>{new Date(post.createdAt).toLocaleDateString()}</span>
             </div>
           </div>
@@ -126,6 +152,13 @@ const PostDetail: React.FC = () => {
 
         <section className="article-layout">
           <aside className="article-aside">
+            <div>
+              <p className="eyebrow">Byline</p>
+              <p>
+                Filed by <Link to="/authors/desk" className="inline-link">{authorName}</Link>. Source type: {sourceLabel}.
+              </p>
+            </div>
+
             <div>
               <p className="eyebrow">Reader note</p>
               <p>
@@ -176,6 +209,9 @@ const PostDetail: React.FC = () => {
             Once the content pipeline is hardened, this space should connect strong stories to a working newsletter or membership funnel instead of staying decorative.
           </p>
           <SubscribeForm sourcePage={`post-${post.id}-cta`} buttonLabel="Get the daily briefing" />
+          <Link to="/authors/desk" className="secondary-link">
+            Meet the desk
+          </Link>
           <Link to="/" className="primary-link">
             Return to the briefing
           </Link>
