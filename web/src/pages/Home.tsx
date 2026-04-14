@@ -115,6 +115,7 @@ const Home: React.FC = () => {
       )}
 
       {/* Grid Section */}
+      <section className="section">
         <div className="discovery-header">
           <h2 className="section-title Montserrat">
             <span className="accent-dot"></span> CURATED STORIES
