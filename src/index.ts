@@ -10,7 +10,7 @@ import { db } from './db/database';
 import { AIGenerationConfig, Post } from './types';
 import { sanitizeHtmlFragment } from './content/sanitize';
 import { getPostQualityIssues } from './content/quality';
-import { isPostSubstantive, stripDepthEnrichment } from './content/depth';
+import { ensureRssCoreSummary, isPostSubstantive, stripDepthEnrichment } from './content/depth';
 
 const app = express();
 
@@ -144,6 +144,7 @@ app.get('/api/posts', async (req: Request, res: Response) => {
 
     const visiblePosts = posts
       .map((post) => stripDepthEnrichment(post))
+      .map((post) => ensureRssCoreSummary(post))
       .filter((post) => isPostSubstantive(post));
 
     res.json(visiblePosts);
@@ -160,7 +161,7 @@ app.get('/api/posts/:id', async (req: Request, res: Response) => {
       return res.status(404).json({ error: 'Post not found' });
     }
 
-    const normalizedPost = stripDepthEnrichment(post);
+    const normalizedPost = ensureRssCoreSummary(stripDepthEnrichment(post));
 
     if (!isPostSubstantive(normalizedPost)) {
       return res.status(404).json({ error: 'Post content unavailable' });
