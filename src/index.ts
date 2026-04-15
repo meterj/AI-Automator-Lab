@@ -10,6 +10,7 @@ import { db } from './db/database';
 import { AIGenerationConfig, Post } from './types';
 import { sanitizeHtmlFragment } from './content/sanitize';
 import { getPostQualityIssues } from './content/quality';
+import { ensurePostDepth } from './content/depth';
 
 const app = express();
 
@@ -141,7 +142,7 @@ app.get('/api/posts', async (req: Request, res: Response) => {
       offset: Number.parseInt(offset as string, 10),
     });
 
-    res.json(posts);
+    res.json(posts.map((post) => ensurePostDepth(post)));
   } catch {
     res.status(500).json({ error: 'Failed to fetch posts' });
   }
@@ -155,7 +156,7 @@ app.get('/api/posts/:id', async (req: Request, res: Response) => {
       return res.status(404).json({ error: 'Post not found' });
     }
 
-    res.json(post);
+    res.json(ensurePostDepth(post));
   } catch {
     res.status(500).json({ error: 'Failed to fetch post' });
   }
@@ -257,13 +258,15 @@ app.post('/api/publish/rss', async (req: Request, res: Response) => {
         success: true,
         collected: posts.length,
         published: 0,
-        posts: publishablePosts,
+        posts: publishablePosts.map((post) => ensurePostDepth(post)),
       });
     }
 
     const results: Array<{ post: Post; success: boolean; url?: string; error?: string }> = [];
 
-    for (const post of publishablePosts) {
+    for (const rawPost of publishablePosts) {
+      const post = ensurePostDepth(rawPost);
+
       if (post.sourceUrl && await db.existsByUrl(post.sourceUrl)) {
         results.push({ post, success: false, error: 'duplicate-source-url' });
         continue;

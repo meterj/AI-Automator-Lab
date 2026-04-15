@@ -55,6 +55,39 @@ const getSourceLabel = (source: string) => {
   }
 };
 
+const extractReadableText = (html: string | undefined): string => {
+  if (!html) {
+    return '';
+  }
+
+  return html
+    .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, ' ')
+    .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, ' ')
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+};
+
+const buildAutoDepthSection = (post: Post, sourceLabel: string): string => {
+  const summary = extractReadableText(post.excerpt || post.content).slice(0, 260)
+    || 'This story has limited source detail, so the desk added context for readability.';
+
+  return `
+    <section data-auto-brief="1" style="margin-top:2rem;border-top:1px solid rgba(255,255,255,0.15);padding-top:1.4rem;">
+      <h2>Why this matters</h2>
+      <p>${summary}</p>
+      <p>This development can affect implementation speed, tooling decisions, and near-term operational planning.</p>
+      <h2 style="margin-top:1.2rem;">Reader checklist</h2>
+      <ul>
+        <li>Identify what changed versus previous coverage.</li>
+        <li>Map impact on roadmap, quality, and budget priorities.</li>
+        <li>Track what should be monitored over the next 30 days.</li>
+      </ul>
+      <p style="opacity:0.78;">Editorial note: this ${sourceLabel.toLowerCase()} article was auto-expanded for readability.</p>
+    </section>
+  `;
+};
+
 const PostDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [post, setPost] = useState<Post | null>(null);
@@ -125,12 +158,16 @@ const PostDetail: React.FC = () => {
     extractFirstImage(post.content) ||
     `https://images.unsplash.com/${DETAIL_IMAGES[fallbackIndex]}?auto=format&fit=crop&q=80&w=1800`;
   const safeContent = sanitizeHtml(post.content);
-  const safeText = safeContent.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
-  const hasVisibleContent = safeText.length > 20;
+  const safeText = extractReadableText(safeContent);
+  const hasVisibleContent = safeText.length > 40;
+  const hasReadableDepth = safeText.length >= 420;
   const fallbackContent = `<p>${(post.excerpt || 'This article content is being prepared. Please check back shortly.').trim()}</p>`;
-  const renderedContent = hasVisibleContent ? safeContent : fallbackContent;
   const authorName = getAuthorName(post.source);
   const sourceLabel = getSourceLabel(post.source);
+  const shouldInjectDepth = hasVisibleContent && !hasReadableDepth && !safeContent.includes('data-auto-brief="1"');
+  const renderedContent = hasVisibleContent
+    ? `${safeContent}${shouldInjectDepth ? buildAutoDepthSection(post, sourceLabel) : ''}`
+    : `${fallbackContent}${buildAutoDepthSection(post, sourceLabel)}`;
 
   return (
     <>

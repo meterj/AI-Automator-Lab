@@ -1,5 +1,5 @@
 const SELF_CLOSING_TAGS = ['base', 'embed', 'iframe', 'input', 'link', 'meta', 'source'];
-const BLOCKED_TAGS = ['script', 'object', 'form', 'button', 'textarea', 'select', 'option', 'svg', 'math'];
+const BLOCKED_TAGS = ['script', 'style', 'noscript', 'object', 'form', 'button', 'textarea', 'select', 'option', 'svg', 'math'];
 
 function stripBlockedTags(html: string): string {
   let sanitized = html;
