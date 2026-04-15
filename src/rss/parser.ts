@@ -62,13 +62,9 @@ export class RSSCollector {
         `<p>Teams tracking this topic should assess immediate implications in three areas: execution risk, stack compatibility, and customer-facing reliability.</p>
          <p>Priority lens: ${keywordLine}.</p>`
       )}
-      ${LAYOUT_TEMPLATES.card(
-        'Editorial Checklist',
-        `<ul>
-           <li>What changed compared to last quarter?</li>
-           <li>Which teams need to adapt in the next 30 days?</li>
-           <li>What should be monitored before rolling into production?</li>
-         </ul>
+      ${LAYOUT_TEMPLATES.section(
+        'Source context',
+        `<p>Use this update as a directional signal, then verify timing, scope, and implementation details against the original publication before acting.</p>
          ${sourceNote}`
       )}
     `;

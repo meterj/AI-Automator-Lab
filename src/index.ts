@@ -10,7 +10,7 @@ import { db } from './db/database';
 import { AIGenerationConfig, Post } from './types';
 import { sanitizeHtmlFragment } from './content/sanitize';
 import { getPostQualityIssues } from './content/quality';
-import { ensurePostDepth, isPostSubstantive } from './content/depth';
+import { isPostSubstantive, stripDepthEnrichment } from './content/depth';
 
 const app = express();
 
@@ -143,8 +143,8 @@ app.get('/api/posts', async (req: Request, res: Response) => {
     });
 
     const visiblePosts = posts
-      .filter((post) => isPostSubstantive(post))
-      .map((post) => ensurePostDepth(post));
+      .map((post) => stripDepthEnrichment(post))
+      .filter((post) => isPostSubstantive(post));
 
     res.json(visiblePosts);
   } catch {
@@ -160,11 +160,13 @@ app.get('/api/posts/:id', async (req: Request, res: Response) => {
       return res.status(404).json({ error: 'Post not found' });
     }
 
-    if (!isPostSubstantive(post)) {
+    const normalizedPost = stripDepthEnrichment(post);
+
+    if (!isPostSubstantive(normalizedPost)) {
       return res.status(404).json({ error: 'Post content unavailable' });
     }
 
-    res.json(ensurePostDepth(post));
+    res.json(normalizedPost);
   } catch {
     res.status(500).json({ error: 'Failed to fetch post' });
   }
@@ -266,15 +268,13 @@ app.post('/api/publish/rss', async (req: Request, res: Response) => {
         success: true,
         collected: posts.length,
         published: 0,
-        posts: publishablePosts.map((post) => ensurePostDepth(post)),
+        posts: publishablePosts,
       });
     }
 
     const results: Array<{ post: Post; success: boolean; url?: string; error?: string }> = [];
 
-    for (const rawPost of publishablePosts) {
-      const post = ensurePostDepth(rawPost);
-
+    for (const post of publishablePosts) {
       if (post.sourceUrl && await db.existsByUrl(post.sourceUrl)) {
         results.push({ post, success: false, error: 'duplicate-source-url' });
         continue;
