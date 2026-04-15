@@ -82,6 +82,29 @@ const PostDetail: React.FC = () => {
     window.scrollTo(0, 0);
   }, [id]);
 
+  useEffect(() => {
+    if (!post) {
+      return;
+    }
+
+    const numericId = Number.parseInt(post.id, 10);
+    const fallbackIndex = Number.isNaN(numericId) ? 0 : numericId % DETAIL_IMAGES.length;
+    const heroImage =
+      extractFirstImage(post.content) ||
+      `https://images.unsplash.com/${DETAIL_IMAGES[fallbackIndex]}?auto=format&fit=crop&q=80&w=1800`;
+    const authorName = getAuthorName(post.source);
+
+    return applySeo({
+      title: `${post.title} | AI Automator Lab`,
+      description: (post.excerpt || '').trim() || 'AI and automation article from AI Automator Lab.',
+      url: `https://ai-automator-lab.vercel.app/post/${post.id}`,
+      image: heroImage,
+      type: 'article',
+      articlePublishedTime: new Date(post.createdAt).toISOString(),
+      authorName,
+    });
+  }, [post]);
+
   const handleCopyLink = async () => {
     if (navigator.clipboard?.writeText) {
       await navigator.clipboard.writeText(window.location.href);
@@ -108,20 +131,6 @@ const PostDetail: React.FC = () => {
   const renderedContent = hasVisibleContent ? safeContent : fallbackContent;
   const authorName = getAuthorName(post.source);
   const sourceLabel = getSourceLabel(post.source);
-
-  useEffect(() => {
-    if (!post) return;
-
-    return applySeo({
-      title: `${post.title} | AI Automator Lab`,
-      description: (post.excerpt || '').trim() || 'AI and automation article from AI Automator Lab.',
-      url: `https://ai-automator-lab.vercel.app/post/${post.id}`,
-      image: heroImage,
-      type: 'article',
-      articlePublishedTime: new Date(post.createdAt).toISOString(),
-      authorName,
-    });
-  }, [authorName, heroImage, post]);
 
   return (
     <>
