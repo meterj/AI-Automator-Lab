@@ -18,6 +18,11 @@ jobs:
           API_URL: https://ai-automator-lab-production.up.railway.app
           SCHEDULE_TRIGGER_TOKEN: ${{ secrets.SCHEDULE_TRIGGER_TOKEN }}
         run: |
+          if [ -z "$SCHEDULE_TRIGGER_TOKEN" ]; then
+            echo "Missing required GitHub secret: SCHEDULE_TRIGGER_TOKEN"
+            exit 1
+          fi
+
           curl_args=(
             --fail-with-body
             --request POST
@@ -26,8 +31,6 @@ jobs:
             --data '{"mode":"rss"}'
           )
 
-          if [ -n "$SCHEDULE_TRIGGER_TOKEN" ]; then
-            curl_args+=(--header "Authorization: Bearer $SCHEDULE_TRIGGER_TOKEN")
-          fi
+          curl_args+=(--header "Authorization: Bearer $SCHEDULE_TRIGGER_TOKEN")
 
           curl "${curl_args[@]}"

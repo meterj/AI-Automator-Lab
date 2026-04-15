@@ -77,7 +77,7 @@ export function validateConfig(): void {
   }
 
   if (config.server.nodeEnv === 'production' && !config.scheduler.triggerToken) {
-    warnings.push('SCHEDULE_TRIGGER_TOKEN is not configured. /api/schedule/run remains public.');
+    warnings.push('SCHEDULE_TRIGGER_TOKEN is not configured. /api/schedule/run will be blocked in production.');
   }
 
   if (warnings.length > 0) {

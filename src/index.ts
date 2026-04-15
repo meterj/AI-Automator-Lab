@@ -25,9 +25,10 @@ function getScheduleTriggerToken(request: Request): string {
 
 function isAuthorizedScheduleTrigger(request: Request): boolean {
   const expectedToken = config.scheduler.triggerToken;
+  const isProduction = config.server.nodeEnv === 'production';
 
   if (!expectedToken) {
-    return true;
+    return !isProduction;
   }
 
   const providedToken = getScheduleTriggerToken(request);
@@ -39,6 +40,14 @@ function isAuthorizedScheduleTrigger(request: Request): boolean {
   }
 
   return timingSafeEqual(expectedBuffer, providedBuffer);
+}
+
+function isScheduleTriggerProtected(): boolean {
+  return config.server.nodeEnv === 'production' || Boolean(config.scheduler.triggerToken);
+}
+
+function isScheduleTriggerTokenConfigured(): boolean {
+  return Boolean(config.scheduler.triggerToken);
 }
 
 app.use(cors());
@@ -62,7 +71,8 @@ app.get('/health', async (req: Request, res: Response) => {
         wordpress: config.wordpress.siteUrl,
         schedulerEnabled: config.scheduler.enabled,
         rssFeedsCount: config.rss.feeds.length,
-        scheduleTriggerProtected: Boolean(config.scheduler.triggerToken),
+        scheduleTriggerProtected: isScheduleTriggerProtected(),
+        scheduleTriggerTokenConfigured: isScheduleTriggerTokenConfigured(),
         subscriberStorageReady: subscribers.ready,
         subscriberCount: subscribers.count,
       },
@@ -358,7 +368,8 @@ app.get('/api/schedule', (req: Request, res: Response) => {
     enabled: config.scheduler.enabled,
     defaultCron: config.scheduler.cron,
     mode: config.scheduler.mode,
-    triggerProtected: Boolean(config.scheduler.triggerToken),
+    triggerProtected: isScheduleTriggerProtected(),
+    triggerTokenConfigured: isScheduleTriggerTokenConfigured(),
     jobs: scheduler.getAllJobStatus(),
   });
 });

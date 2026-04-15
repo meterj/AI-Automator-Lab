@@ -58,6 +58,7 @@ Expected API state after Railway is configured:
 - This keeps RSS auto-publishing running even if the Railway internal scheduler remains disabled.
 - You can also trigger the workflow manually from the GitHub Actions tab with `workflow_dispatch`.
 - Add `SCHEDULE_TRIGGER_TOKEN` as a GitHub Actions secret and set the same value in Railway variables before enabling endpoint protection.
+- In production, `/api/schedule/run` is blocked unless `SCHEDULE_TRIGGER_TOKEN` is set. The workflow now fails fast when the secret is missing.
 
 ## Notes
 
