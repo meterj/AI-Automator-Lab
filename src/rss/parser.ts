@@ -36,6 +36,131 @@ export class RSSCollector {
     }
   }
 
+  private getItemContent(item: Parser.Item): string {
+    const extendedItem = item as Parser.Item & {
+      'content:encoded'?: string;
+      summary?: string;
+      description?: string;
+    };
+
+    const candidates = [
+      extendedItem['content:encoded'],
+      item.content,
+      item.contentSnippet,
+      extendedItem.summary,
+      extendedItem.description,
+    ]
+      .map((candidate) => (typeof candidate === 'string' ? candidate.trim() : ''))
+      .filter(Boolean);
+
+    if (candidates.length === 0) {
+      return '';
+    }
+
+    return candidates.sort((a, b) => sanitizePlainText(b).length - sanitizePlainText(a).length)[0];
+  }
+
+  private extractKeySentences(text: string, maxItems = 3): string[] {
+    const normalized = sanitizePlainText(text).replace(/\s+/g, ' ').trim();
+    if (!normalized) {
+      return [];
+    }
+
+    const sentenceCandidates = normalized
+      .split(/(?<=[.!?])\s+/)
+      .map((sentence) => sentence.trim())
+      .filter((sentence) => sentence.length >= 40);
+
+    const unique: string[] = [];
+    const seen = new Set<string>();
+
+    for (const sentence of sentenceCandidates) {
+      const key = sentence.toLowerCase();
+      if (seen.has(key)) {
+        continue;
+      }
+
+      seen.add(key);
+      unique.push(sentence);
+
+      if (unique.length >= maxItems) {
+        break;
+      }
+    }
+
+    if (unique.length > 0) {
+      return unique;
+    }
+
+    return normalized
+      .split(/[,;]\s+/)
+      .map((chunk) => chunk.trim())
+      .filter((chunk) => chunk.length >= 35)
+      .slice(0, maxItems);
+  }
+
+  private extractEntities(text: string): string[] {
+    const matches =
+      sanitizePlainText(text).match(/\b(?:[A-Z][a-z]+(?:\s+[A-Z][a-z]+){0,2}|[A-Z]{2,}(?:\s+[A-Z]{2,})?)\b/g) || [];
+    const stopwords = new Set([
+      'The',
+      'This',
+      'That',
+      'These',
+      'Those',
+      'For',
+      'And',
+      'With',
+      'From',
+      'Into',
+      'Over',
+      'Under',
+      'A',
+      'An',
+      'In',
+      'On',
+      'At',
+      'By',
+    ]);
+
+    const entities: string[] = [];
+    const seen = new Set<string>();
+
+    for (const match of matches) {
+      const candidate = match.trim();
+      if (candidate.length < 3 || stopwords.has(candidate)) {
+        continue;
+      }
+
+      const key = candidate.toLowerCase();
+      if (seen.has(key)) {
+        continue;
+      }
+
+      seen.add(key);
+      entities.push(candidate);
+
+      if (entities.length >= 6) {
+        break;
+      }
+    }
+
+    return entities;
+  }
+
+  private buildKeyTakeaways(title: string, sourceSummary: string): string {
+    const keySentences = this.extractKeySentences(sourceSummary, 3);
+    const points =
+      keySentences.length > 0
+        ? keySentences
+        : [`${title} was captured from the feed, but the publisher exposed only a short preview snippet.`];
+
+    return LAYOUT_TEMPLATES.card(
+      'Key Takeaways',
+      `<ul>${points.map((point) => `<li>${point}</li>`).join('')}</ul>`
+    );
+  }
+
   private buildExtendedAnalysis(options: {
     title: string;
     sourceSummary: string;
@@ -46,21 +171,24 @@ export class RSSCollector {
     const { title, sourceSummary, sourceName, categories, sourceLink } = options;
     const keywordLine = categories.length > 0 ? categories.slice(0, 4).join(', ') : 'AI operations, product strategy, automation';
     const safeSummary = sourceSummary || 'The source summary is limited, but the topic itself signals an important shift.';
+    const namedEntities = this.extractEntities(`${title} ${sourceSummary}`);
+    const entityLine = namedEntities.length > 0 ? namedEntities.join(', ') : 'No clearly named entities were exposed in the snippet.';
 
     const sourceNote = sourceLink
-      ? `<p style="margin-top: 0.8rem; color: #5d6770;">This analysis is based on the available summary from ${sourceName}. For full context, refer to the original source link.</p>`
+      ? `<p style="margin-top: 0.8rem; color: #5d6770;">Source for verification: ${sourceName}. Original link is attached below.</p>`
       : '';
 
     return `
       ${LAYOUT_TEMPLATES.section(
-        'Why this matters now',
+        'What this means now',
         `<p>${safeSummary}</p>
          <p>This story matters because <strong>${title}</strong> connects directly to near-term decisions in deployment speed, tooling choices, and team workflows.</p>`
       )}
       ${LAYOUT_TEMPLATES.section(
         'Operational impact',
         `<p>Teams tracking this topic should assess immediate implications in three areas: execution risk, stack compatibility, and customer-facing reliability.</p>
-         <p>Priority lens: ${keywordLine}.</p>`
+         <p>Priority lens: ${keywordLine}.</p>
+         <p><strong>Named entities:</strong> ${entityLine}</p>`
       )}
       ${LAYOUT_TEMPLATES.section(
         'Source context',
@@ -80,13 +208,14 @@ export class RSSCollector {
     const { title, rawContent, sourceName, categories, sourceLink } = options;
     const summaryText = sanitizePlainText(rawContent);
     const normalizedSummary = summaryText || 'Source summary was limited.';
+    const keyTakeaways = this.buildKeyTakeaways(title, normalizedSummary);
     const baseContent = `<div style="margin-top: 1.5rem;">${rawContent}</div>`;
 
-    if (summaryText.length >= 520) {
-      return baseContent;
+    if (summaryText.length >= 780) {
+      return `${keyTakeaways}${baseContent}`;
     }
 
-    return `${baseContent}${this.buildExtendedAnalysis({
+    return `${keyTakeaways}${baseContent}${this.buildExtendedAnalysis({
       title,
       sourceSummary: normalizedSummary,
       sourceName,
@@ -101,7 +230,7 @@ export class RSSCollector {
 
       return feed.items.map((item) => ({
         title: item.title || 'Untitled',
-        content: item.contentSnippet || item.content || '',
+        content: this.getItemContent(item),
         link: item.link || '',
         pubDate: item.pubDate,
         author: item.creator || item.author,
