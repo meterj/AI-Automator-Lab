@@ -61,6 +61,12 @@ const getSourceLabel = (source: string) => {
   }
 };
 
+const hasRenderableContent = (post: Post): boolean => {
+  const excerptLength = cleanContent(post.excerpt).length;
+  const contentLength = cleanContent(post.content).length;
+  return excerptLength > 40 || contentLength > 80;
+};
+
 const Home: React.FC = () => {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
@@ -86,7 +92,7 @@ const Home: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    const featured = posts[0];
+    const featured = posts.find((post) => hasRenderableContent(post)) || posts[0];
     const description = featured
       ? cleanContent(featured.excerpt || featured.content).slice(0, 155)
       : 'Daily AI news, automation monitoring, and source-linked analysis.';
@@ -101,14 +107,16 @@ const Home: React.FC = () => {
     });
   }, [posts]);
 
-  const filteredPosts = posts.filter((post) => {
+  const visiblePosts = posts.filter((post) => hasRenderableContent(post));
+
+  const filteredPosts = visiblePosts.filter((post) => {
     const searchable = `${post.title} ${cleanContent(post.excerpt || post.content)}`.toLowerCase();
     const matchesSearch = deferredSearch ? searchable.includes(deferredSearch.toLowerCase()) : true;
     const matchesCategory = activeCategory === 'All' ? true : searchable.includes(activeCategory.toLowerCase());
     return matchesSearch && matchesCategory;
   });
 
-  const activePosts = filteredPosts.length > 0 ? filteredPosts : posts;
+  const activePosts = filteredPosts.length > 0 ? filteredPosts : visiblePosts;
   const featuredPost = activePosts[0] || null;
   const archivePosts = activePosts.slice(featuredPost ? 1 : 0, 9);
 
@@ -192,7 +200,7 @@ const Home: React.FC = () => {
         <div className="signal-grid">
           <article>
             <span>Freshness</span>
-            <strong>{posts.length} stories in the live archive</strong>
+            <strong>{visiblePosts.length} stories in the live archive</strong>
             <p>The front page reflects API-backed content instead of static mock data.</p>
           </article>
           <article>

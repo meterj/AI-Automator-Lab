@@ -41,6 +41,24 @@
     <priority>0.3</priority>
   </url>
   <url>
+    <loc>https://ai-automator-lab.vercel.app/post/16</loc>
+    <lastmod>2026-04-15T00:00:05.718Z</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://ai-automator-lab.vercel.app/post/15</loc>
+    <lastmod>2026-04-15T00:00:04.517Z</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://ai-automator-lab.vercel.app/post/14</loc>
+    <lastmod>2026-04-15T00:00:03.271Z</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://ai-automator-lab.vercel.app/post/13</loc>
     <lastmod>2026-04-14T15:15:16.354Z</lastmod>
     <changefreq>daily</changefreq>
