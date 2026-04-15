@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { applySeo } from '../seo';
 import SubscribeForm from '../components/SubscribeForm';
+import { API_BASE } from '../lib/api';
 
 interface Post {
   id: string;
@@ -14,8 +15,6 @@ interface Post {
   status: string;
   createdAt: string;
 }
-
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
 const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&q=80&w=1600';
 const STORY_IMAGES = [

@@ -5,6 +5,7 @@ import { motion, useScroll, useSpring } from 'framer-motion';
 import { applySeo } from '../seo';
 import SubscribeForm from '../components/SubscribeForm';
 import { sanitizeHtml } from '../lib/sanitizeHtml';
+import { API_BASE } from '../lib/api';
 
 interface Post {
   id: string;
@@ -16,7 +17,6 @@ interface Post {
   createdAt: string;
 }
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&q=80&w=1800';
 const DETAIL_IMAGES = [
   'photo-1498050108023-c5249f4df085',
@@ -102,6 +102,10 @@ const PostDetail: React.FC = () => {
     extractFirstImage(post.content) ||
     `https://images.unsplash.com/${DETAIL_IMAGES[fallbackIndex]}?auto=format&fit=crop&q=80&w=1800`;
   const safeContent = sanitizeHtml(post.content);
+  const safeText = safeContent.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+  const hasVisibleContent = safeText.length > 20;
+  const fallbackContent = `<p>${(post.excerpt || 'This article content is being prepared. Please check back shortly.').trim()}</p>`;
+  const renderedContent = hasVisibleContent ? safeContent : fallbackContent;
   const authorName = getAuthorName(post.source);
   const sourceLabel = getSourceLabel(post.source);
 
@@ -198,7 +202,7 @@ const PostDetail: React.FC = () => {
           </aside>
 
           <article className="article-body">
-            <div className="article-content" dangerouslySetInnerHTML={{ __html: safeContent }} />
+            <div className="article-content" dangerouslySetInnerHTML={{ __html: renderedContent }} />
           </article>
         </section>
 
