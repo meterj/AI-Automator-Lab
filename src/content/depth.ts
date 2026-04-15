@@ -31,6 +31,11 @@ export function extractReadableText(html: string): string {
     .trim();
 }
 
+export function isPostSubstantive(post: Post): boolean {
+  const text = extractReadableText(post.content);
+  return text.length >= 80;
+}
+
 function buildDepthBlocks(post: Post): string {
   const source = getSourceLabel(post.source);
   const summary =
@@ -68,6 +73,11 @@ export function ensurePostDepth(post: Post): Post {
   const needsExcerptExpansion = excerptText.length > 0 && excerptText.length < 90;
 
   if ((!needsBodyExpansion && !needsExcerptExpansion) || post.content.includes(DEPTH_MARKER)) {
+    return post;
+  }
+
+  // Legacy empty AI posts should be hidden or regenerated, not padded with synthetic filler blocks.
+  if (post.source === 'ai' && bodyText.length < 80) {
     return post;
   }
 

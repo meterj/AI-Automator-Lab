@@ -10,7 +10,7 @@ import { db } from './db/database';
 import { AIGenerationConfig, Post } from './types';
 import { sanitizeHtmlFragment } from './content/sanitize';
 import { getPostQualityIssues } from './content/quality';
-import { ensurePostDepth } from './content/depth';
+import { ensurePostDepth, isPostSubstantive } from './content/depth';
 
 const app = express();
 
@@ -142,7 +142,11 @@ app.get('/api/posts', async (req: Request, res: Response) => {
       offset: Number.parseInt(offset as string, 10),
     });
 
-    res.json(posts.map((post) => ensurePostDepth(post)));
+    const visiblePosts = posts
+      .filter((post) => isPostSubstantive(post))
+      .map((post) => ensurePostDepth(post));
+
+    res.json(visiblePosts);
   } catch {
     res.status(500).json({ error: 'Failed to fetch posts' });
   }
@@ -154,6 +158,10 @@ app.get('/api/posts/:id', async (req: Request, res: Response) => {
 
     if (!post) {
       return res.status(404).json({ error: 'Post not found' });
+    }
+
+    if (!isPostSubstantive(post)) {
+      return res.status(404).json({ error: 'Post content unavailable' });
     }
 
     res.json(ensurePostDepth(post));

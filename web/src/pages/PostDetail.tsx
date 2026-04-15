@@ -88,6 +88,12 @@ const buildAutoDepthSection = (post: Post, sourceLabel: string): string => {
   `;
 };
 
+const buildUnavailableMessage = () =>
+  `<section data-unavailable="1" style="margin-top:1.6rem;">
+    <h2>Article unavailable</h2>
+    <p>This post was hidden because the original body was incomplete. A regenerated version will replace it.</p>
+  </section>`;
+
 const PostDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [post, setPost] = useState<Post | null>(null);
@@ -164,10 +170,13 @@ const PostDetail: React.FC = () => {
   const fallbackContent = `<p>${(post.excerpt || 'This article content is being prepared. Please check back shortly.').trim()}</p>`;
   const authorName = getAuthorName(post.source);
   const sourceLabel = getSourceLabel(post.source);
-  const shouldInjectDepth = hasVisibleContent && !hasReadableDepth && !safeContent.includes('data-auto-brief="1"');
+  const canInjectDepth = post.source === 'rss' || post.source === 'manual';
+  const shouldInjectDepth = canInjectDepth && hasVisibleContent && !hasReadableDepth && !safeContent.includes('data-auto-brief="1"');
   const renderedContent = hasVisibleContent
     ? `${safeContent}${shouldInjectDepth ? buildAutoDepthSection(post, sourceLabel) : ''}`
-    : `${fallbackContent}${buildAutoDepthSection(post, sourceLabel)}`;
+    : post.source === 'ai'
+      ? buildUnavailableMessage()
+      : `${fallbackContent}${buildAutoDepthSection(post, sourceLabel)}`;
 
   return (
     <>
