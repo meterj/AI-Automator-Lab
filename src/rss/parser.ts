@@ -36,6 +36,69 @@ export class RSSCollector {
     }
   }
 
+  private buildExtendedAnalysis(options: {
+    title: string;
+    sourceSummary: string;
+    sourceName: string;
+    categories: string[];
+    sourceLink?: string;
+  }): string {
+    const { title, sourceSummary, sourceName, categories, sourceLink } = options;
+    const keywordLine = categories.length > 0 ? categories.slice(0, 4).join(', ') : 'AI operations, product strategy, automation';
+    const safeSummary = sourceSummary || 'The source summary is limited, but the topic itself signals an important shift.';
+
+    const sourceNote = sourceLink
+      ? `<p style="margin-top: 0.8rem; color: #5d6770;">This analysis is based on the available summary from ${sourceName}. For full context, refer to the original source link.</p>`
+      : '';
+
+    return `
+      ${LAYOUT_TEMPLATES.section(
+        'Why this matters now',
+        `<p>${safeSummary}</p>
+         <p>This story matters because <strong>${title}</strong> connects directly to near-term decisions in deployment speed, tooling choices, and team workflows.</p>`
+      )}
+      ${LAYOUT_TEMPLATES.section(
+        'Operational impact',
+        `<p>Teams tracking this topic should assess immediate implications in three areas: execution risk, stack compatibility, and customer-facing reliability.</p>
+         <p>Priority lens: ${keywordLine}.</p>`
+      )}
+      ${LAYOUT_TEMPLATES.card(
+        'Editorial Checklist',
+        `<ul>
+           <li>What changed compared to last quarter?</li>
+           <li>Which teams need to adapt in the next 30 days?</li>
+           <li>What should be monitored before rolling into production?</li>
+         </ul>
+         ${sourceNote}`
+      )}
+    `;
+  }
+
+  private buildBodyContent(options: {
+    title: string;
+    rawContent: string;
+    sourceName: string;
+    categories: string[];
+    sourceLink?: string;
+  }): string {
+    const { title, rawContent, sourceName, categories, sourceLink } = options;
+    const summaryText = sanitizePlainText(rawContent);
+    const normalizedSummary = summaryText || 'Source summary was limited.';
+    const baseContent = `<div style="margin-top: 1.5rem;">${rawContent}</div>`;
+
+    if (summaryText.length >= 520) {
+      return baseContent;
+    }
+
+    return `${baseContent}${this.buildExtendedAnalysis({
+      title,
+      sourceSummary: normalizedSummary,
+      sourceName,
+      categories,
+      sourceLink,
+    })}`;
+  }
+
   async parseFeed(feedUrl: string): Promise<RSSItem[]> {
     try {
       const feed = await this.parser.parseURL(feedUrl);
@@ -83,6 +146,7 @@ export class RSSCollector {
     const safeLink = toSafeHttpUrl(item.link);
     const safeAuthor = sanitizePlainText(item.author || '');
     const hostname = safeLink ? this.extractHostname(safeLink) : null;
+    const safeCategories = item.categories?.map((category) => sanitizePlainText(category)).filter(Boolean) || [];
 
     let htmlContent = '';
 
@@ -103,7 +167,13 @@ export class RSSCollector {
       : hostname || 'Collected from RSS';
 
     htmlContent += LAYOUT_TEMPLATES.lead(`${safeTitle}\n\n${sourceText}`);
-    htmlContent += `<div style="margin-top: 1.5rem;">${safeContent}</div>`;
+    htmlContent += this.buildBodyContent({
+      title: safeTitle,
+      rawContent: safeContent,
+      sourceName: hostname || 'the source publication',
+      categories: safeCategories,
+      sourceLink: safeLink,
+    });
 
     if (options?.includeSourceLink && safeLink) {
       const publishedAt = item.pubDate
@@ -119,12 +189,14 @@ export class RSSCollector {
     }
 
     const excerpt = sanitizePlainText(safeContent).slice(0, 200);
+    const bodyText = sanitizePlainText(htmlContent);
+    const generatedExcerpt = bodyText.slice(0, 240);
 
     return {
       title: safeTitle,
       content: LAYOUT_TEMPLATES.wrap(htmlContent),
-      excerpt: excerpt ? `${excerpt}...` : safeTitle,
-      categories: item.categories?.map((category) => sanitizePlainText(category)).filter(Boolean),
+      excerpt: generatedExcerpt ? `${generatedExcerpt}...` : (excerpt ? `${excerpt}...` : safeTitle),
+      categories: safeCategories,
       status: 'draft',
       createdAt: new Date(),
       source: 'rss',
